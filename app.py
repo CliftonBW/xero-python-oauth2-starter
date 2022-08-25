@@ -3,19 +3,24 @@ import os
 from functools import wraps
 from io import BytesIO
 from logging.config import dictConfig
+from wsgiref import headers
 
 from flask import Flask, url_for, render_template, session, redirect, json, send_file
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
-from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contacts
+from flask_table import Table, Col
+from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contacts, Invoice,Invoices, LineItem
 from xero_python.api_client import ApiClient, serialize
 from xero_python.api_client.configuration import Configuration
 from xero_python.api_client.oauth2 import OAuth2Token
 from xero_python.exceptions import AccountingBadRequestException
 from xero_python.identity import IdentityApi
 from xero_python.utils import getvalue
-
+import dateutil
+import requests
 import logging_settings
+from invoicetable import InvoiceTable, InvoiceItem
+from lineitemtable import LineItemTable, LineItemObject
 from utils import jsonify, serialize_model
 
 dictConfig(logging_settings.default_settings)
@@ -89,12 +94,22 @@ def xero_token_required(function):
 
 
 @app.route("/")
+@xero_token_required
 def index():
     xero_access = dict(obtain_xero_oauth2_token() or {})
+    code=app.config["INVOICES_CODE"]
+    req = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoices',params={"code":code})
+    data = req.json()['data']
+    items = []
+    for d in data:
+        items.append(InvoiceItem(data=d))
+
+    table = InvoiceTable(items)
     return render_template(
-        "code.html",
-        title="Home | oauth token",
-        code=json.dumps(xero_access, sort_keys=True, indent=4),
+        "table.html",
+        title="Invoices",
+        table=table,
+        sub_title="Invoices",
     )
 
 
@@ -220,6 +235,66 @@ def get_invoices():
         "code.html", title="Invoices", code=code, sub_title=sub_title
     )
 
+@app.route("/post-invoice/<string:id>")
+@xero_token_required
+def post_invoices(id):
+    lineitem_code=app.config["LINEITEM_CODE"]
+    invoice_code=app.config["INVOICE_CODE"]
+    email_code=app.config["EMAIL_CODE"]
+    xero_tenant_id = get_xero_tenant_id()
+    accounting_api = AccountingApi(api_client)
+    req = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoiceLineItems',params={"invoice_number": id,"code":lineitem_code})
+    data = req.json()['data']
+    req2 = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoice',params={"invoice_number": id,"code":invoice_code})
+    data2 = req2.json()['data']
+    
+    line_items = []   
+    for d in data:
+        line_item = LineItem(
+        description = d.get("description"),
+        quantity = d.get("quantity"),
+        unit_amount = d.get("unit_amount"),
+        account_code = "1")         
+        line_items.append(line_item)
+    id = ""
+    bill_to = ""
+    contact = Contact()
+    for d in data2:
+        invoice_number = d.get("invoice_number")
+        PartitionKey = d.get("PartitionKey")
+        contacts = accounting_api.get_contacts(xero_tenant_id=xero_tenant_id,where= 'Name=\"'+ d.get("bill_to")+ '\"')
+        c = Contact()
+        #primary_finance_email = "clifton@bluewireless.com"
+        id = d.get("id")
+        bill_to = d.get("bill_to")
+        primary_finance_email = d.get("primary_finance_email")
+        finance_email = d.get("finance_email")
+        currency = d.get("currency")
+        invoice_total_amount = d.get("invoice_total_amount")
+        due_date = d.get("due_date")
+        invoice_owner_email = d.get("invoice_owner_email")
+
+        for c in contacts.contacts:
+            contact = c
+        invoice = Invoice(
+        type = "ACCREC",
+        contact = contact,
+        date = dateutil.parser.parse(d.get("invoice_date")),
+        due_date = dateutil.parser.parse(d.get("due_date")),
+        line_items = line_items,
+        reference = d.get("reference"),
+        status = "DRAFT")
+
+    invoices = Invoices( 
+        invoices = [invoice])    
+    invoices = accounting_api.create_invoices(xero_tenant_id=xero_tenant_id,invoices=invoices)
+    req3 = requests.get('https://az-fa-billing.azurewebsites.net/api/SendInvoiceEmail',params={"invoice_number": invoice_number,
+        "PartitionKey": PartitionKey,"primary_finance_email":primary_finance_email,
+        "finance_email":finance_email,"currency":currency,
+        "invoice_total_amount":invoice_total_amount,"due_date":due_date,
+        "invoice_owner_email":invoice_owner_email,"bill_to":bill_to,"code":email_code})
+    return redirect(url_for("get_lineitems", id=id))
+
 
 @app.route("/login")
 def login():
@@ -274,6 +349,45 @@ def refresh_token():
         sub_title="token refreshed",
     )
 
+@app.route("/get-lineitems/<string:id>")
+def get_lineitems(id):
+    lineitemcode=app.config["LINEITEM_CODE"]
+    invoicecode=app.config["INVOICE_CODE"]
+    req = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoiceLineItems',params={"invoice_number": id,"code":lineitemcode})
+    data = req.json()['data']
+    req2 = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoice',params={"invoice_number": id,"code":invoicecode})
+    data2 = req2.json()['data']
+    items = []
+
+    for d in data:
+        items.append(LineItemObject(data=d))
+
+    table = LineItemTable(items)
+    return render_template(
+        "table.html",
+        id=id,
+        table=table,
+        invoices=data2
+    )
+
+
+
+@app.route("/get-invoices-azure")
+def get_invoices_azure():
+    code=app.config["INVOICES_CODE"]
+    req = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoices',params={"code":code})
+    data = req.json()['data']
+    items = []
+    for d in data:
+        items.append(InvoiceItem(data=d))
+
+    table = InvoiceTable(items)
+    return render_template(
+        "table.html",
+        title="Invoices",
+        table=table,
+        sub_title="Invoices",
+    )
 
 def get_xero_tenant_id():
     token = obtain_xero_oauth2_token()

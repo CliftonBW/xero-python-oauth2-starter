@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <h2>{{ title }}</h2>
+        {% if id %}<a href="{{ url_for('post_invoices',id=id) }}">Submit to Xero/Send Email to Customer</a>{% endif %}
+        {% if invoices %}  
+            {% for invoice in invoices %}       
+                <h4>{{invoice.bill_to}}</h4>
+                <h5>Invoice Number: {{invoice.invoice_number}}</h5>
+                <h5>Reference: {{invoice.reference}}</h5>
+                <h5>Attention: {{invoice.attention}}</h5>
+                <h5>Currency: {{invoice.currency}}</h5>
+                <h5>Local Site: {{invoice.local_site}}</h5>
+                <h5>Invoice Date: {{invoice.invoice_date}}</h5>
+                <h5>Due Date: {{invoice.due_date}}</h5>
+                <h5>Invoice Total Amount: {{invoice.invoice_total_amount}}</h5>   
+            {% endfor %}                 
+        {% endif %}
+        {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}
+        {% if table %}{{table}}{% endif %}       
+
+    </div>
+{% endblock %}
