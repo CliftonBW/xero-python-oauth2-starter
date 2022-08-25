@@ -3,3 +3,4 @@ flask-session==0.3.2
 flask-table
 flask-oauthlib==0.9.6
 xero-python==1.5.3
+python-dotenv

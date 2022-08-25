@@ -1,9 +1,12 @@
-from os import environ, path
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
-CLIENT_ID = environ['CLIENT_ID']
-CLIENT_SECRET = environ['CLIENT_SECRET']
-LINEITEM_CODE = environ['LINEITEM_CODE']
-INVOICE_CODE = environ['INVOICE_CODE']
-EMAIL_CODE = environ['EMAIL_CODE']
-INVOICES_CODE = environ['INVOICES_CODE']
+load_dotenv()
+
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+LINEITEM_CODE = os.getenv('LINEITEM_CODE')
+INVOICE_CODE = os.getenv('INVOICE_CODE')
+EMAIL_CODE = os.getenv('EMAIL_CODE')
+INVOICES_CODE = os.getenv('INVOICES_CODE')
