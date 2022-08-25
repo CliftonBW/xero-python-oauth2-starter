@@ -1,5 +1,5 @@
 venv
-config.py
+.venv
 cache/
 __pycache__/
 
