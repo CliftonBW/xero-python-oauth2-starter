@@ -94,6 +94,7 @@ def xero_token_required(function):
 
 
 @app.route("/")
+@xero_token_required
 def index():
     xero_access = dict(obtain_xero_oauth2_token() or {})
     code=app.config["INVOICES_CODE"]
@@ -400,5 +401,5 @@ def get_xero_tenant_id():
 
 
 if __name__ == '__main__':
-    #app.run(host='localhost', port=5000)
-    app.run()
+    app.run(host='localhost', port=5000)
+    #app.run()
