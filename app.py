@@ -94,7 +94,6 @@ def xero_token_required(function):
 
 
 @app.route("/")
-@xero_token_required
 def index():
     xero_access = dict(obtain_xero_oauth2_token() or {})
     code=app.config["INVOICES_CODE"]
