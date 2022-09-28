@@ -297,7 +297,7 @@ def post_invoices(id):
 
 @app.route("/login")
 def login():
-    redirect_url = url_for("oauth_callback", _external=True)
+    redirect_url = url_for("oauth_callback", _external=True,_scheme ="https")
     response = xero.authorize(callback_uri=redirect_url)
     return response
 
