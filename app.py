@@ -313,7 +313,7 @@ def oauth_callback():
     if response is None or response.get("access_token") is None:
         return "Access denied: response=%s" % response
     store_xero_oauth2_token(response)
-    return redirect(url_for("index", _external=True))
+    return redirect(url_for("index", _external=True,_scheme ="https"))
 
 
 @app.route("/logout")
