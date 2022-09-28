@@ -297,7 +297,7 @@ def post_invoices(id):
 
 @app.route("/login")
 def login():
-    redirect_url = url_for("oauth_callback", _external=True,_scheme="https")
+    redirect_url = url_for("oauth_callback", _external=True)
     response = xero.authorize(callback_uri=redirect_url)
     return response
 
@@ -400,5 +400,5 @@ def get_xero_tenant_id():
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5000)
+    app.run(host='localhost', port=5000,ssl_context='adhoc')
     #app.run()
