@@ -244,45 +244,47 @@ def post_invoices(id):
     xero_tenant_id = get_xero_tenant_id()
     accounting_api = AccountingApi(api_client)
     req = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoiceLineItems',params={"invoice_number": id,"code":lineitem_code})
-    data = req.json()['data']
+    lineitems = req.json()['data']
     req2 = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoice',params={"invoice_number": id,"code":invoice_code})
-    data2 = req2.json()['data']
+    invoice = req2.json()['data']
     
     line_items = []   
-    for d in data:
+    for lineitem in lineitems:
         line_item = LineItem(
-        description = d.get("description"),
-        quantity = d.get("quantity"),
-        unit_amount = d.get("unit_amount"),
-        account_code = "1")         
+        description = lineitem.get("description"),
+        quantity = lineitem.get("quantity"),
+        unit_amount = lineitem.get("unit_amount"),
+        account_code = lineitem.get("account_code_xero"))         
         line_items.append(line_item)
     id = ""
     bill_to = ""
     contact = Contact()
-    for d in data2:
-        invoice_number = d.get("invoice_number")
-        PartitionKey = d.get("PartitionKey")
-        contacts = accounting_api.get_contacts(xero_tenant_id=xero_tenant_id,where= 'Name=\"'+ d.get("bill_to")+ '\"')
+    for details in invoice:
+        invoice_number = details.get("invoice_number")
+        PartitionKey = details.get("PartitionKey")
+        contacts = accounting_api.get_contacts(xero_tenant_id=xero_tenant_id,where= 'Name=\"'+ details.get("bill_to")+ '\"')
         c = Contact()
         #primary_finance_email = "clifton@bluewireless.com"
-        id = d.get("id")
-        bill_to = d.get("bill_to")
-        primary_finance_email = d.get("primary_finance_email")
-        finance_email = d.get("finance_email")
-        currency = d.get("currency")
-        invoice_total_amount = d.get("invoice_total_amount")
-        due_date = d.get("due_date")
-        invoice_owner_email = d.get("invoice_owner_email")
+        id = details.get("id")
+        bill_to = details.get("bill_to")
+        bill_entity = details.get("bill_entity")
+        primary_finance_email = details.get("primary_finance_email")
+        finance_email = details.get("finance_email")
+        currency = details.get("currency")
+        invoice_total_amount = details.get("invoice_total_amount")
+        due_date = details.get("due_date")
+        invoice_owner_email = details.get("invoice_owner_email")
 
         for c in contacts.contacts:
             contact = c
         invoice = Invoice(
         type = "ACCREC",
         contact = contact,
-        date = dateutil.parser.parse(d.get("invoice_date")),
-        due_date = dateutil.parser.parse(d.get("due_date")),
+        date = dateutil.parser.parse(details.get("invoice_date")),
+        due_date = dateutil.parser.parse(details.get("due_date")),
         line_items = line_items,
-        reference = d.get("reference"),
+        invoice_number = details.get("invoice_number"),
+        reference = details.get("reference"),
         status = "DRAFT")
 
     invoices = Invoices( 
@@ -292,7 +294,7 @@ def post_invoices(id):
         "PartitionKey": PartitionKey,"primary_finance_email":primary_finance_email,
         "finance_email":finance_email,"currency":currency,
         "invoice_total_amount":invoice_total_amount,"due_date":due_date,
-        "invoice_owner_email":invoice_owner_email,"bill_to":bill_to,"code":email_code})
+        "invoice_owner_email":invoice_owner_email,"bill_to":bill_to,"bill_entity":bill_entity,"code":email_code})
     return redirect(url_for("get_lineitems", id=id))
 
 
@@ -336,6 +338,20 @@ def export_token():
         attachment_filename="oauth2_token.py",
     )
 
+@app.route("/get-accounts")
+@xero_token_required
+def accounting_get_accounts():
+    api_instance = AccountingApi(api_client)
+    xero_tenant_id = get_xero_tenant_id()
+    
+    try:
+        api_response = api_instance.get_accounts(xero_tenant_id)
+        code = serialize_model(api_response)
+        return render_template(
+        "code.html", title="Accounts", code=code
+        )
+    except AccountingBadRequestException as e:
+        print("Exception when calling AccountingApi->getAccounts: %s\n" % e)
 
 @app.route("/refresh-token")
 @xero_token_required
