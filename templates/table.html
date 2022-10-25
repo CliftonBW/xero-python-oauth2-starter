@@ -3,7 +3,8 @@
 {% block content %}
     <div>
         <h2>{{ title }}</h2>
-        {% if id %}<a href="{{ url_for('post_invoices',id=id) }}">Submit to Xero/Send Email to Customer</a>{% endif %}
+        {% if id %}<a href="{{ url_for('post_invoice',id=id) }}">Confirm invoice</a>{% endif %}
+        {% if id %}<a href="{{ url_for('send_email',id=id) }}">Submit to Xero/Send Email to Customer</a>{% endif %}
         {% if invoices %}  
             {% for invoice in invoices %}       
                 <h4>{{invoice.bill_to}}</h4>

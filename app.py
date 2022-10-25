@@ -234,19 +234,31 @@ def get_invoices():
     return render_template(
         "code.html", title="Invoices", code=code, sub_title=sub_title
     )
-
 @app.route("/post-invoice/<string:id>")
 @xero_token_required
-def post_invoices(id):
+def post_invoice(id):
+    post_code=app.config["POST_CODE"]  
+    req4 = requests.get('https://az-fa-billing.azurewebsites.net/api/PostInvoice',params={"invoice_number": id,"code":post_code})
+    return redirect(url_for("get_lineitems", id=id))
+
+@app.route("/send-email/<string:id>")
+@xero_token_required
+def send_email(id):
     lineitem_code=app.config["LINEITEM_CODE"]
     invoice_code=app.config["INVOICE_CODE"]
-    email_code=app.config["EMAIL_CODE"]
-    xero_tenant_id = get_xero_tenant_id()
+    email_code=app.config["EMAIL_CODE"]  
     accounting_api = AccountingApi(api_client)
     req = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoiceLineItems',params={"invoice_number": id,"code":lineitem_code})
     lineitems = req.json()['data']
     req2 = requests.get('https://az-fa-billing.azurewebsites.net/api/GetInvoice',params={"invoice_number": id,"code":invoice_code})
     invoice = req2.json()['data']
+    xero_tenant_id = ""
+    for details in invoice:
+        bill_entity = details.get("bill_entity")
+        if bill_entity == "BWSG":
+            xero_tenant_id = get_xero_tenant_id_BWSG()
+        elif bill_entity == "BWNL":
+            xero_tenant_id = get_xero_tenant_id_BWNL()
     
     line_items = []   
     for lineitem in lineitems:
@@ -262,9 +274,6 @@ def post_invoices(id):
     for details in invoice:
         invoice_number = details.get("invoice_number")
         PartitionKey = details.get("PartitionKey")
-        contacts = accounting_api.get_contacts(xero_tenant_id=xero_tenant_id,where= 'Name=\"'+ details.get("bill_to")+ '\"')
-        c = Contact()
-        #primary_finance_email = "clifton@bluewireless.com"
         id = details.get("id")
         bill_to = details.get("bill_to")
         bill_entity = details.get("bill_entity")
@@ -275,6 +284,8 @@ def post_invoices(id):
         due_date = details.get("due_date")
         invoice_owner_email = details.get("invoice_owner_email")
 
+        contacts = accounting_api.get_contacts(xero_tenant_id=xero_tenant_id,where= 'Name=\"'+ details.get("bill_to")+ '\"')
+        c = Contact()
         for c in contacts.contacts:
             contact = c
         invoice = Invoice(
@@ -295,6 +306,7 @@ def post_invoices(id):
         "finance_email":finance_email,"currency":currency,
         "invoice_total_amount":invoice_total_amount,"due_date":due_date,
         "invoice_owner_email":invoice_owner_email,"bill_to":bill_to,"bill_entity":bill_entity,"code":email_code})
+    
     return redirect(url_for("get_lineitems", id=id))
 
 
@@ -316,7 +328,7 @@ def oauth_callback():
     if response is None or response.get("access_token") is None:
         return "Access denied: response=%s" % response
     store_xero_oauth2_token(response)
-    return redirect(url_for("get_invoices_azure", _external=True,_scheme ="https"))
+    return redirect(url_for("index", _external=True,_scheme ="https"))
 
 
 @app.route("/logout")
@@ -413,6 +425,26 @@ def get_xero_tenant_id():
     identity_api = IdentityApi(api_client)
     for connection in identity_api.get_connections():
         if connection.tenant_type == "ORGANISATION":
+            return connection.tenant_id
+
+def get_xero_tenant_id_BWNL():
+    token = obtain_xero_oauth2_token()
+    if not token:
+        return None
+
+    identity_api = IdentityApi(api_client)
+    for connection in identity_api.get_connections():
+        if connection.tenant_name == "Blue Wireless Europe":
+            return connection.tenant_id
+
+def get_xero_tenant_id_BWSG():
+    token = obtain_xero_oauth2_token()
+    if not token:
+        return None
+
+    identity_api = IdentityApi(api_client)
+    for connection in identity_api.get_connections():
+        if connection.tenant_name == "Blue Wireless Singapore":
             return connection.tenant_id
 
 

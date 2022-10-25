@@ -39,7 +39,7 @@ class InvoiceItem(object):
         self.billing_code = data["billing_code"]
         self.billing_city = data["billing_city"]
         self.floor_unit = data["floor_unit"]
-        self.invoice_date = data["invoice_date"]
+        self.invoice_date = data["bill_date"]
         self.end_invoice_date = data["end_invoice_date"]
         self.reference = data.get("reference")
         self.due_date = data["due_date"]
