@@ -23,6 +23,7 @@ class InvoiceTable(Table):
     reference = Col('Reference')
     local_site = Col('Local Site')
     invoice_owner = Col('Invoice Owner')
+    collection = Col('Collection')
 
 # Get some objects
 class InvoiceItem(object):
