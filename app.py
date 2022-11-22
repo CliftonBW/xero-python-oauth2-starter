@@ -534,25 +534,6 @@ def get_xero_tenant_id():
         if connection.tenant_type == "ORGANISATION":
             return connection.tenant_id
 
-# def get_xero_tenant_id_BWNL():
-#     token = obtain_xero_oauth2_token()
-#     if not token:
-#         return None
-
-#     identity_api = IdentityApi(api_client)
-#     for connection in identity_api.get_connections():
-#         if connection.tenant_name == "Blue Wireless Europe":
-#             return connection.tenant_id
-
-# def get_xero_tenant_id_BWSG():
-#     token = obtain_xero_oauth2_token()
-#     if not token:
-#         return None
-
-#     identity_api = IdentityApi(api_client)
-#     for connection in identity_api.get_connections():
-#         if connection.tenant_name == "Blue Wireless Singapore":
-#             return connection.tenant_id
 def get_xero_tenant_id_demo():
     token = obtain_xero_oauth2_token()
     if not token:
