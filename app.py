@@ -244,6 +244,8 @@ def post_invoice(id):
     req4 = requests.get(url + 'PostInvoice',params={"invoice_number": id,"code":post_code})
     return redirect(url_for("get_lineitems", id=id))
 
+
+
 @app.route("/send-email/<string:id>")
 @xero_token_required
 def send_email(id):
@@ -570,7 +572,16 @@ def get_xero_tenant_id_by_entity(bill_entity):
             return connection.tenant_id
         if bill_entity == "BWNL" and connection.tenant_name == "Blue Wireless Europe":
             return connection.tenant_id
-        
+        if bill_entity == "BWAU" and connection.tenant_name == "Blue Wireless Australia":
+            return connection.tenant_id
+        if bill_entity == "BWMY" and connection.tenant_name == "Blue Wireless Malaysia":
+            return connection.tenant_id
+        if bill_entity == "BWNZ" and connection.tenant_name == "Blue Wireless New Zealand":
+            return connection.tenant_id
+        if bill_entity == "BWUK" and connection.tenant_name == "Blue Wireless (UK) Ltd.":
+            return connection.tenant_id
+        if bill_entity == "BWUS" and connection.tenant_name == "Blue Wireless US":
+            return connection.tenant_id
 
 if __name__ == '__main__':
     app.run(host='localhost', port=5000,ssl_context='adhoc')
