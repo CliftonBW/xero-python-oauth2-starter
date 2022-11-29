@@ -1,14 +1,14 @@
 # import things
-from flask_table import Table, Col, LinkCol, ButtonCol
+from flask_table import Table, Col, LinkCol, ButtonCol, BoolCol
 import requests
 
 # Declare your table
 class InvoiceTable(Table):
-    table_id = "data"
-    classes = ['table table-striped']
-    LineItems = Col('Check Box')
-    LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(id='id'))
+    table_id = "invoicedata"
+    classes = ['table table-striped'] 
+    RowKey = Col('')
     invoice_number = Col('Invoice Number')
+    LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm'})
     invoice_date = Col('Invoice Date')
     due_date = Col('Due Date')
     paid_amount = Col('Paid Amount')
@@ -31,6 +31,7 @@ class InvoiceItem(object):
         self.PartitionKey = data.get("PartitionKey") 
         self.RowKey = data["RowKey"]
         self.id = data["id"]
+        self.checkbox = ""
         self.LineItems = data
         self.collection = data["collection"]
         self.bill_to = data["bill_to"]

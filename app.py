@@ -111,8 +111,7 @@ def index():
     return render_template(
         "table.html",
         title="Invoices",
-        table=table,
-        sub_title="Invoices",
+        table=table
     )
 
 
@@ -222,21 +221,31 @@ def create_multiple_contacts():
     )
 
 
-@app.route("/invoices")
+@app.route("/update-invoices/<string:id>")
 @xero_token_required
-def get_invoices():
-    xero_tenant_id = get_xero_tenant_id()
+def update_invoices(id):
     accounting_api = AccountingApi(api_client)
-
+    xero_tenant_id = ""    
+    if id == "DEMO":
+        xero_tenant_id = get_xero_tenant_id_demo()
+    else:
+        xero_tenant_id = get_xero_tenant_id_by_entity(id)
     invoices = accounting_api.get_invoices(
-        xero_tenant_id, statuses=["DRAFT", "SUBMITTED"]
+        xero_tenant_id,statuses=["AUTHORISED","PAID"]
     )
-    code = serialize_model(invoices)
-    sub_title = "Total invoices found: {}".format(len(invoices.invoices))
+    for invoice in invoices.invoices:
+        invoice_number = invoice.invoice_number
+        amount_paid = invoice.amount_paid
+        amount_due = invoice.amount_due
+        req = requests.get(url + 'UpdateInvoice',params={"invoice_number": invoice_number,
+        "amount_paid": amount_paid,"amount_due": amount_due})
+    sub_title = "Updating Invoices from Xero"
 
     return render_template(
-        "code.html", title="Invoices", code=code, sub_title=sub_title
+        "code.html", title="Invoices", sub_title=sub_title
     )
+
+
 @app.route("/post-invoice/<string:id>")
 @xero_token_required
 def post_invoice(id):
@@ -282,6 +291,7 @@ def send_email(id):
     for details in invoice:
         invoice_number = details.get("invoice_number")
         PartitionKey = details.get("PartitionKey")
+        RowKey = details.get("RowKey")
         id = details.get("id")
         bill_to = details.get("bill_to")
         bill_entity = details.get("bill_entity")
@@ -321,6 +331,7 @@ def send_email(id):
                 contact = nc
             invoice = Invoice(
             type = "ACCREC",
+            currency_code=currency,
             contact = contact,
             date = dateutil.parser.parse(details.get("invoice_date")),
             due_date = dateutil.parser.parse(details.get("due_date")),
@@ -333,7 +344,7 @@ def send_email(id):
         invoices = [invoice])    
     invoices = accounting_api.update_or_create_invoices(xero_tenant_id=xero_tenant_id,invoices=invoices)
     req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": invoice_number,
-        "PartitionKey": PartitionKey,"primary_finance_email":primary_finance_email,
+        "PartitionKey": PartitionKey,"RowKey": RowKey,"primary_finance_email":primary_finance_email,
         "finance_email":finance_email,"currency":currency,
         "invoice_total_amount":invoice_total_amount,"due_date":due_date,
         "invoice_owner_email":invoice_owner_email,"bill_to":bill_to,"bill_entity":bill_entity,"code":email_code})
@@ -499,7 +510,7 @@ def get_lineitems(id):
 
     table = LineItemTable(items)
     return render_template(
-        "table.html",
+        "lineitemtable.html",
         id=id,
         table=table,
         invoices=data2
@@ -520,8 +531,7 @@ def get_invoices_azure():
     return render_template(
         "table.html",
         title="Invoices",
-        table=table,
-        sub_title="Invoices",
+        table=table
     )
 
 def get_xero_tenant_id():

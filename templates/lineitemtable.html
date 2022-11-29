@@ -29,17 +29,9 @@
         </button>
         {% endif %}
         {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}
-        <form id="frm-example" action="/path/to/your/script.php" method="POST">
-            <!-- <button id ="test" type="submit" class="btn btn-outline-primary">
-                Test
-            </button>     -->
-            {% if table %}{{table}}{% endif %} 
-            <!-- <p><b>Selected rows data:</b></p>
-            <pre id="example-console-rows"></pre>
+  
+        {% if table %}{{table}}{% endif %} 
 
-            <p><b>Form data as submitted to the server:</b></p>
-            <pre id="example-console-form"></pre> -->
-        </form>
         
 
     </div>
