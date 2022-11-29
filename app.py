@@ -225,6 +225,7 @@ def create_multiple_contacts():
 @xero_token_required
 def update_invoices(id):
     accounting_api = AccountingApi(api_client)
+    update_code=app.config["UPDATE_CODE"]  
     xero_tenant_id = ""    
     if id == "DEMO":
         xero_tenant_id = get_xero_tenant_id_demo()
@@ -238,7 +239,7 @@ def update_invoices(id):
         amount_paid = invoice.amount_paid
         amount_due = invoice.amount_due
         req = requests.get(url + 'UpdateInvoice',params={"invoice_number": invoice_number,
-        "amount_paid": amount_paid,"amount_due": amount_due})
+        "amount_paid": amount_paid,"amount_due": amount_due,"update_code":update_code})
     sub_title = "Updating Invoices from Xero"
 
     return render_template(
