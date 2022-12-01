@@ -272,19 +272,19 @@ def send_email(id):
     invoice = req2.json()['data']
     xero_tenant_id = ""
     for details in invoice:
-        bill_entity = details.get("bill_entity")
         if development:
-            xero_tenant_id = get_xero_tenant_id_demo()          
+            xero_tenant_id = get_xero_tenant_id_demo()
         else:
+            bill_entity = details.get("bill_entity")
+
             xero_tenant_id = get_xero_tenant_id_by_entity(bill_entity)
-    print(xero_tenant_id)
+
     line_items = []   
     for lineitem in lineitems:
         line_item = LineItem(
         description = lineitem.get("description"),
         quantity = lineitem.get("quantity"),
         unit_amount = lineitem.get("unit_amount"),
-        tax_type=lineitem.get("tax_type"),
         account_code = lineitem.get("account_code_xero"))         
         line_items.append(line_item)
     id = ""
