@@ -9,7 +9,7 @@ from flask import Flask, url_for, render_template, session, redirect, json, send
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
 from flask_table import Table, Col
-from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contacts, Invoice,Invoices, LineItem
+from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contacts, Invoice,Invoices, LineItem, CurrencyCode
 from xero_python.api_client import ApiClient, serialize
 from xero_python.api_client.configuration import Configuration
 from xero_python.api_client.oauth2 import OAuth2Token
@@ -284,6 +284,7 @@ def send_email(id):
         description = lineitem.get("description"),
         quantity = lineitem.get("quantity"),
         unit_amount = lineitem.get("unit_amount"),
+        tax_type=lineitem.get("tax_type"),
         account_code = lineitem.get("account_code_xero"))         
         line_items.append(line_item)
     id = ""
@@ -332,7 +333,7 @@ def send_email(id):
                 contact = nc
             invoice = Invoice(
             type = "ACCREC",
-            currency_code=currency,
+            currency_code=CurrencyCode(currency),
             contact = contact,
             date = dateutil.parser.parse(details.get("invoice_date")),
             due_date = dateutil.parser.parse(details.get("due_date")),
@@ -375,6 +376,7 @@ def check_contact(id):
         description = lineitem.get("description"),
         quantity = lineitem.get("quantity"),
         unit_amount = lineitem.get("unit_amount"),
+        tax_type=lineitem.get("tax_type"),
         account_code = lineitem.get("account_code_xero"))         
         line_items.append(line_item)
     id = ""
@@ -551,7 +553,7 @@ def get_xero_tenant_id_demo():
         return None
 
 
-    return "8b53a39f-ed9e-44d7-8be6-66b87772d263"
+    return "e8937b68-584e-42ca-919e-7857e82de322"
 
 def get_xero_tenant_id_by_entity(bill_entity):
     token = obtain_xero_oauth2_token()
