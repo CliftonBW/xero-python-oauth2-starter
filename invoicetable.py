@@ -14,10 +14,11 @@ class InvoiceTable(Table):
     paid_amount = Col('Paid Amount')
     outstanding_amount = Col('Outstanding Amount')
     overdue_date = Col('Overdue Date')
+    currency = Col('Currency')
     invoice_total_amount = Col('Invoice Total Amount')
     invoice_status = Col('Invoice Status')
-    tax_type = Col('Tax Type')
-    currency = Col('Currency')
+    payment_status = Col('Payment Status')
+    tax_type = Col('Tax Type')    
     bill_entity = Col('Bill Entity')
     bill_to = Col('Bill To')
     reference = Col('Reference')
@@ -41,7 +42,7 @@ class InvoiceItem(object):
         self.billing_code = data["billing_code"]
         self.billing_city = data["billing_city"]
         self.floor_unit = data["floor_unit"]
-        self.invoice_date = data["bill_date"]
+        self.invoice_date = data["invoice_date"] if "invoice_date" in data else ""
         self.end_invoice_date = data["end_invoice_date"]
         self.reference = data.get("reference")
         self.due_date = data["due_date"]
@@ -55,6 +56,7 @@ class InvoiceItem(object):
         self.invoice_total_amount = data["invoice_total_amount"]
         self.invoice_number = data["invoice_number"]
         self.invoice_status = data["invoice_status"]
+        self.payment_status = data["payment_status"]
         self.tax_type = data.get("tax_type")
         self.currency = data["currency"]
         self.bill_entity = data["bill_entity"]

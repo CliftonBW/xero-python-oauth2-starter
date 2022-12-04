@@ -292,17 +292,12 @@ def send_email(id):
     contact = Contact()
     for details in invoice:
         invoice_number = details.get("invoice_number")
-        PartitionKey = details.get("PartitionKey")
-        RowKey = details.get("RowKey")
         id = details.get("id")
         bill_to = details.get("bill_to")
         bill_entity = details.get("bill_entity")
         primary_finance_email = details.get("primary_finance_email")
-        finance_email = details.get("finance_email")
         currency = details.get("currency")
-        invoice_total_amount = details.get("invoice_total_amount")
-        due_date = details.get("due_date")
-        invoice_owner_email = details.get("invoice_owner_email")
+
 
         contacts = accounting_api.get_contacts(xero_tenant_id=xero_tenant_id,where= 'Name=\"'+ details.get("bill_to")+ '\"')
         
@@ -345,91 +340,9 @@ def send_email(id):
     invoices = Invoices( 
         invoices = [invoice])    
     invoices = accounting_api.update_or_create_invoices(xero_tenant_id=xero_tenant_id,invoices=invoices)
-    req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": invoice_number,
-        "PartitionKey": PartitionKey,"RowKey": RowKey,"primary_finance_email":primary_finance_email,
-        "finance_email":finance_email,"currency":currency,
-        "invoice_total_amount":invoice_total_amount,"due_date":due_date,
-        "invoice_owner_email":invoice_owner_email,"bill_to":bill_to,"bill_entity":bill_entity,"code":email_code})
+    req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code})
     
     return redirect(url_for("get_lineitems", id=id))
-
-@app.route("/check-contact/<string:id>")
-@xero_token_required
-def check_contact(id):
-    lineitem_code=app.config["LINEITEM_CODE"]
-    invoice_code=app.config["INVOICE_CODE"]
-    email_code=app.config["EMAIL_CODE"] 
-    development = False 
-    if app.config["ENV"] == "development":
-        development = True
-    accounting_api = AccountingApi(api_client)
-    req = requests.get(url + 'GetInvoiceLineItems',params={"invoice_number": id,"code":lineitem_code})
-    lineitems = req.json()['data']
-    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"code":invoice_code})
-    invoice = req2.json()['data']
-    xero_tenant_id = get_xero_tenant_id_demo() 
-
-
-    line_items = []   
-    for lineitem in lineitems:
-        line_item = LineItem(
-        description = lineitem.get("description"),
-        quantity = lineitem.get("quantity"),
-        unit_amount = lineitem.get("unit_amount"),
-        tax_type=lineitem.get("tax_type"),
-        account_code = lineitem.get("account_code_xero"))         
-        line_items.append(line_item)
-    id = ""
-    bill_to = ""
-    contact = Contact()
-    for details in invoice:
-        invoice_number = details.get("invoice_number")
-        PartitionKey = details.get("PartitionKey")
-        id = details.get("id")
-        bill_to = details.get("bill_to")
-        bill_entity = details.get("bill_entity")
-        primary_finance_email = details.get("primary_finance_email")
-        finance_email = details.get("finance_email")
-        currency = details.get("currency")
-        invoice_total_amount = details.get("invoice_total_amount")
-        due_date = details.get("due_date")
-        invoice_owner_email = details.get("invoice_owner_email")
-
-        contacts = accounting_api.get_contacts(xero_tenant_id=xero_tenant_id,where= 'Name=\"'+ bill_to + '\"')
-        created_contacts = ""
-        
-        if contacts.contacts:
-            for c in contacts.contacts:
-                contact = c
-            invoice = Invoice(
-            type = "ACCREC",
-            contact = contact,
-            date = dateutil.parser.parse(details.get("invoice_date")),
-            due_date = dateutil.parser.parse(details.get("due_date")),
-            line_items = line_items,
-            invoice_number = details.get("invoice_number"),
-            reference = details.get("reference"),
-            status = "DRAFT")
-        else:
-            contact = Contact(
-                name=bill_to,
-                first_name="Finance",
-                last_name="Team",
-                email_address=primary_finance_email
-            )
-            contacts = Contacts(contacts=[contact])
-            created_contacts = accounting_api.create_contacts(
-                xero_tenant_id, contacts=contacts
-            ) 
-            for nc in created_contacts.contacts:
-                contact = nc
-        code = serialize_model(created_contacts)
-    return render_template(
-        "code.html",
-        title="Check Contacts",
-        code=code
-    )
-
 
 @app.route("/login")
 def login():
