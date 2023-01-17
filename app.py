@@ -254,11 +254,9 @@ def post_invoice(id):
     req4 = requests.get(url + 'PostInvoice',params={"invoice_number": id,"code":post_code})
     return redirect(url_for("get_lineitems", id=id))
 
-
-
-@app.route("/send-email/<string:id>")
+@app.route("/send-xero/<string:id>")
 @xero_token_required
-def send_email(id):
+def send_to_xero(id):
     lineitem_code=app.config["LINEITEM_CODE"]
     invoice_code=app.config["INVOICE_CODE"]
     email_code=app.config["EMAIL_CODE"] 
@@ -342,6 +340,23 @@ def send_email(id):
     invoices = accounting_api.update_or_create_invoices(xero_tenant_id=xero_tenant_id,invoices=invoices)
     req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code})
     
+    return redirect(url_for("get_lineitems", id=id))
+
+@app.route("/send-email/<string:id>")
+@xero_token_required
+def send_email(id):
+    lineitem_code=app.config["LINEITEM_CODE"]
+    invoice_code=app.config["INVOICE_CODE"]
+    email_code=app.config["EMAIL_CODE"] 
+    development = False 
+    if app.config["ENV"] == "development":
+        development = True
+    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"code":invoice_code})
+    invoice = req2.json()['data']
+    id = ""
+    for details in invoice:
+        id = details.get("id")
+    req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code})   
     return redirect(url_for("get_lineitems", id=id))
 
 @app.route("/login")
