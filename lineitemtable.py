@@ -20,7 +20,7 @@ class LineItemTable(Table):
 
 # Get some objects
 class LineItemObject(object):
-    def __init__(self, data):
+    def __init__(self, data): 
         self.PartitionKey = data.get("PartitionKey") 
         self.RowKey = data.get("RowKey") 
         self.id = data.get("id") 

@@ -337,20 +337,14 @@ def send_to_xero(id):
 
     invoices = Invoices( 
         invoices = [invoice])    
-    invoices = accounting_api.update_or_create_invoices(xero_tenant_id=xero_tenant_id,invoices=invoices)
-    req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code})
-    
+    invoices = accounting_api.update_or_create_invoices(xero_tenant_id=xero_tenant_id,invoices=invoices)   
     return redirect(url_for("get_lineitems", id=id))
 
 @app.route("/send-email/<string:id>")
 @xero_token_required
 def send_email(id):
-    lineitem_code=app.config["LINEITEM_CODE"]
     invoice_code=app.config["INVOICE_CODE"]
     email_code=app.config["EMAIL_CODE"] 
-    development = False 
-    if app.config["ENV"] == "development":
-        development = True
     req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"code":invoice_code})
     invoice = req2.json()['data']
     id = ""
