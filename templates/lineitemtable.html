@@ -8,22 +8,27 @@
         {% if invoices %}  
             {% for invoice in invoices %}       
                 <h4>{{invoice.bill_to}}</h4>
-                <h6>Invoice Number: {{invoice.invoice_number}}</h6>
-                <h6>Billing Street: {{invoice.billing_street}}</h6>
-                <h6>Billing Country: {{invoice.billing_country}}</h6>
-                <h6>Billing Code: {{invoice.billing_code}}</h6>
-                <h6>Reference: {{invoice.reference}}</h6>
-                <h6>Attention: {{invoice.attention}}</h6>
-                <h6>Currency: {{invoice.currency}}</h6>
-                <h6>Local Site: {{invoice.local_site}}</h6>
-                <h6>Invoice Status: {{invoice.invoice_status}}</h6>
-                <h6>Payment Status: {{invoice.payment_status}}</h6>
-                <h6 class="pull-right">Invoice Date: {{invoice.invoice_date}}</h6>
-                <h6 class="pull-right">Due Date: {{invoice.due_date}}</h6>
-                <h6 class="pull-right">Payment Term: {{invoice.payment_term}}</h6>
-                <h6 class="pull-right">Invoice Total Amount: {{invoice.invoice_total_amount}}</h6> 
-                <h6 class="pull-right">Primary Finance Email: {{invoice.primary_finance_email}}</h6> 
-                <h6 class="pull-right">Extra Email: {{invoice.finance_email}}</h6> 
+                <div class="container-sm border pull-left column">
+                    <h6>Invoice Number: {{invoice.invoice_number}}</h6>
+                    <h6>Billing Street: {{invoice.billing_street}}</h6>
+                    <h6>Billing Country: {{invoice.billing_country}}</h6>
+                    <h6>Billing Code: {{invoice.billing_code}}</h6>
+                    <h6>Reference: {{invoice.reference}}</h6>
+                    <h6>Attention: {{invoice.attention}}</h6>
+                    <h6>Currency: {{invoice.currency}}</h6>
+                    <h6>Local Site: {{invoice.local_site}}</h6>
+                    
+                </div>
+                <div class="container-sm border pull-right column">
+                    <h6>Invoice Status: {{invoice.invoice_status}}</h6>
+                    <h6>Payment Status: {{invoice.payment_status}}</h6>
+                    <h6>Invoice Date: {{invoice.invoice_date}}</h6>
+                    <h6>Due Date: {{invoice.due_date}}</h6>
+                    <h6>Payment Term: {{invoice.payment_term}} Days</h6>
+                    <h6>Invoice Total Amount: ${{invoice.invoice_total_amount}}</h6> 
+                    <h6>Primary Finance Email: {{invoice.primary_finance_email}}</h6> 
+                    <h6>Extra Email: {{invoice.finance_email}}</h6> 
+                </div>
             {% endfor %}                 
         {% endif %}
         </form>
@@ -32,8 +37,11 @@
         <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#confirmInvoiceModal">
             Confirm Invoice
         </button>
-        <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#submitInvoiceModal">
-            Submit to Xero/Send Email to Customer
+        <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#sendEmailModal">
+            Send Email to Customer
+        </button>
+        <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#submitInvoiceModal">
+            Submit to Xero
         </button>
         {% endif %}
         {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}
@@ -64,24 +72,45 @@
         </div>
     </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="submitInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                <h5 class="modal-title" id="submitInvoiceModalTitle">Submit Invoice</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-                <div class="modal-body">
-                
-                </div>
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                {% if id %}<a class="btn btn-primary" href="{{ url_for('send_email',id=id) }}">Submit to Xero/Send Email to Customer</a>{% endif %}
-                </div>
+    <!-- Modal -->
+    <div class="modal fade" id="sendEmailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="sendEmailModalTitle">Submit Invoice</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
             </div>
+            <div class="modal-body">
+            
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            {% if id %}<a class="btn btn-primary" href="{{ url_for('send_email',id=id) }}">Send Email to Customer</a>{% endif %}
             </div>
         </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="submitInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="submitInvoiceModalTitle">Submit Invoice</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            {% if id %}<a class="btn btn-primary" href="{{ url_for('send_to_xero',id=id) }}">Submit to Xero</a>{% endif %}
+            </div>
+        </div>
+        </div>
+    </div>
 {% endblock %}
