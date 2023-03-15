@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>{% if title %}{{ title }}{% else %}Welcome to Bill Town{% endif %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">  
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.5.0/css/select.dataTables.min.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='styles/styles.css')}}">
+    <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />
+</head>
+<body>
+
+    {% if user_code %}
+    <ol>
+    <li>To sign in, type <b>{{ user_code }}</b> into
+      <a href='{{ auth_uri }}' target=_blank>{{ auth_uri }}</a>
+      to authenticate.
+    </li>
+    <li>And then <a href="{{ url_for('auth_response') }}">proceed</a>.</li>
+    </ol>
+    {% else %}
+    <li><a href='{{ auth_uri }}'>Sign In</a></li>
+    {% endif %}
+
+    {% if config.get("B2C_RESET_PASSWORD_AUTHORITY") %}
+    <li><a href="{{config.get('B2C_RESET_PASSWORD_AUTHORITY')}}?client_id={{config.get('CLIENT_ID')}}">Reset Password</a></li>
+    {% endif %}
+
+    <hr>
+    <footer style="text-align: right">Powered by Identity Web {{ version }}</footer>
+</body>
+</html>
+

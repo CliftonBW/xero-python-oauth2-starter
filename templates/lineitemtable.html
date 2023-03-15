@@ -40,9 +40,6 @@
         <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#sendEmailModal">
             Send Email to Customer
         </button>
-        <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#submitInvoiceModal">
-            Submit to Xero
-        </button>
         {% endif %}
         {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}
   
@@ -93,24 +90,5 @@
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="submitInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="submitInvoiceModalTitle">Submit Invoice</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            <div class="modal-body">
-            
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            {% if id %}<a class="btn btn-primary" href="{{ url_for('send_to_xero',id=id) }}">Submit to Xero</a>{% endif %}
-            </div>
-        </div>
-        </div>
-    </div>
+
 {% endblock %}

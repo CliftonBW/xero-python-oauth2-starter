@@ -5,3 +5,6 @@ flask-oauthlib==0.9.6
 xero-python==1.5.3
 python-dotenv
 pyopenssl
+werkzeug>=2
+requests>=2,<3
+identity>=0.2,<0.3
