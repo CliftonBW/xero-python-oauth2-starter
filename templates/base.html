@@ -10,9 +10,8 @@
     <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />
 </head>
 <body>
-<img class="logo topcorner" src="{{url_for('static', filename='media/bwlogo.jpg')}}" alt="BWLogo">
-<nav class="navbar navbar-expand-lg navbar-light">
-  <a class="navbar-brand" href="#">Bill Town</a>
+<img class="logo topcorner block" href="#" src="{{url_for('static', filename='media/bwlogo.png')}}" alt="BWLogo">
+<nav class="navbar navbar-expand-lg navbar-light block">
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -21,38 +20,6 @@
       <li class="nav-item active">
         <a class="nav-link" href="{{ url_for('index') }}">Home</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('tenants') }}">Tenants</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('accounting_get_accounts') }}">Accounts</a>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Send Invoices to XERO
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-          <a class="dropdown-item" href="{{ url_for('send_to_xero',bill_entity='BWSG') }}">BWSG</a>
-          <a class="dropdown-item" href="{{ url_for('send_to_xero',bill_entity='BWNL') }}">BWNL</a>
-          <a class="dropdown-item" href="{{ url_for('send_to_xero',bill_entity='BWAU') }}">BWAU</a>
-          <a class="dropdown-item" href="{{ url_for('send_to_xero',bill_entity='BWMY') }}">BWMY</a>
-          <a class="dropdown-item" href="{{ url_for('send_to_xero',bill_entity='BWNZ') }}">BWNZ</a>
-          <a class="dropdown-item" href="{{ url_for('send_to_xero',bill_entity='BWUK') }}">BWUK</a>
-          <a class="dropdown-item" href="{{ url_for('send_to_xero',bill_entity='BWUS') }}">BWUS</a>
-        </div>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Update Invoices from XERO
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-          <a class="dropdown-item" href="{{ url_for('update_invoices',id='BWSG') }}">BWSG</a>
-          <a class="dropdown-item" href="{{ url_for('update_invoices',id='BWNL') }}">BWNL</a>
-          <a class="dropdown-item" href="{{ url_for('update_invoices',id='BWAU') }}">BWAU</a>
-          <a class="dropdown-item" href="{{ url_for('update_invoices',id='BWMY') }}">BWMY</a>
-          <a class="dropdown-item" href="{{ url_for('update_invoices',id='BWNZ') }}">BWNZ</a>
-          <a class="dropdown-item" href="{{ url_for('update_invoices',id='BWUK') }}">BWUK</a>
-          <a class="dropdown-item" href="{{ url_for('update_invoices',id='BWUS') }}">BWUS</a>
-        </div>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Login/Logout
@@ -104,20 +71,63 @@
 <!--<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>-->
 <script>
       $(document).ready(function () {
-      var table = $('#invoicedata').DataTable({
-      'columnDefs': [
-      {
-        'targets': 0,
-        'checkboxes': {
-            'selectRow': true
-        }
-      }
-      ],
-      'select': {
-      'style': 'multi'
-      },
-      'order': [[1, 'asc']]
-      } );
+        $('#invoicedata thead tr')
+        .clone(true)
+        .addClass('filters')
+        .appendTo('#invoicedata thead');
+        var table = $('#invoicedata').DataTable({
+        orderCellsTop: true,
+        fixedHeader: true,
+        initComplete: function () {
+            var api = this.api();
+ 
+            // For each column
+            api
+                .columns()
+                .eq(0)
+                .each(function (colIdx) {
+                    // Set the header cell to contain the input element
+                    var cell = $('.filters th').eq(
+                        $(api.column(colIdx).header()).index()
+                    );
+                    var title = $(cell).text();
+                    $(cell).html('<input type="text" placeholder="' + title + '" />');
+ 
+                    // On every keypress in this input
+                    $(
+                        'input',
+                        $('.filters th').eq($(api.column(colIdx).header()).index())
+                    )
+                        .off('keyup change')
+                        .on('change', function (e) {
+                            // Get the search value
+                            $(this).attr('title', $(this).val());
+                            var regexr = '({search})'; //$(this).parents('th').find('select').val();
+ 
+                            var cursorPosition = this.selectionStart;
+                            // Search the column for that value
+                            api
+                                .column(colIdx)
+                                .search(
+                                    this.value != ''
+                                        ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                        : '',
+                                    this.value != '',
+                                    this.value == ''
+                                )
+                                .draw();
+                        })
+                        .on('keyup', function (e) {
+                            e.stopPropagation();
+ 
+                            $(this).trigger('change');
+                            $(this)
+                                .focus()[0]
+                                .setSelectionRange(cursorPosition, cursorPosition);
+                        });
+                });
+        },
+    });
 
       $('#frm-example').on('submit', function(e){
       var form = this;
@@ -150,7 +160,63 @@
       // Prevent actual form submission
       e.preventDefault();
    });  
-   $('#data').DataTable({}); 
+   $('#lineitemdata thead tr')
+        .clone(true)
+        .addClass('filters')
+        .appendTo('#lineitemdata thead');
+        var table = $('#lineitemdata').DataTable({
+        orderCellsTop: true,
+        fixedHeader: true,
+        initComplete: function () {
+            var api = this.api();
+ 
+            // For each column
+            api
+                .columns()
+                .eq(0)
+                .each(function (colIdx) {
+                    // Set the header cell to contain the input element
+                    var cell = $('.filters th').eq(
+                        $(api.column(colIdx).header()).index()
+                    );
+                    var title = $(cell).text();
+                    $(cell).html('<input type="text" placeholder="' + title + '" />');
+ 
+                    // On every keypress in this input
+                    $(
+                        'input',
+                        $('.filters th').eq($(api.column(colIdx).header()).index())
+                    )
+                        .off('keyup change')
+                        .on('change', function (e) {
+                            // Get the search value
+                            $(this).attr('title', $(this).val());
+                            var regexr = '({search})'; //$(this).parents('th').find('select').val();
+ 
+                            var cursorPosition = this.selectionStart;
+                            // Search the column for that value
+                            api
+                                .column(colIdx)
+                                .search(
+                                    this.value != ''
+                                        ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                        : '',
+                                    this.value != '',
+                                    this.value == ''
+                                )
+                                .draw();
+                        })
+                        .on('keyup', function (e) {
+                            e.stopPropagation();
+ 
+                            $(this).trigger('change');
+                            $(this)
+                                .focus()[0]
+                                .setSelectionRange(cursorPosition, cursorPosition);
+                        });
+                });
+        },
+    });
   });
 
     

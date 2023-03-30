@@ -4,7 +4,7 @@ import requests
 
 # Declare your table
 class LineItemTable(Table):
-    table_id = "data"
+    table_id = "lineitemdata"
     classes = ['table table-striped']
     description = Col('Description')
     order_id = Col('Order ID')

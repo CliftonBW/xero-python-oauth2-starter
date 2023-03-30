@@ -6,7 +6,6 @@ import requests
 class InvoiceTable(Table):
     table_id = "invoicedata"
     classes = ['table table-striped'] 
-    RowKey = Col('')
     invoice_number = Col('Invoice Number')
     LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm'})
     invoice_date = Col('Invoice Date')
