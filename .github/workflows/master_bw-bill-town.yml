@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'bw-bill-town'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0740EB6DD8794A1CB3C16C6F1E5D59F1 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_828F7906427A4F818FBE839F95435C68 }}
