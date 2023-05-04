@@ -25,7 +25,7 @@
             Confirm Invoice
         </button>
         <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#submitInvoiceModal">
-            Submit to Xero/Send Email to Customer
+            Send Email to Customer
         </button>
         {% endif %}
         {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}
@@ -79,7 +79,7 @@
                 </div>
                 <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                {% if id %}<a class="btn btn-primary" href="{{ url_for('send_email',id=id) }}">Submit to Xero/Send Email to Customer</a>{% endif %}
+                {% if id %}<a class="btn btn-primary" href="{{ url_for('send_email',id=id) }}">Send Email to Customer</a>{% endif %}
                 </div>
             </div>
             </div>

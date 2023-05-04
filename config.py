@@ -6,8 +6,6 @@ load_dotenv()
 
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-XERO_CLIENT_ID = os.getenv('CLIENT_ID')
-XERO_CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 LINEITEM_CODE = os.getenv('LINEITEM_CODE')
 INVOICE_CODE = os.getenv('INVOICE_CODE')
 EMAIL_CODE = os.getenv('EMAIL_CODE')

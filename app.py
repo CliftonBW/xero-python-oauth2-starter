@@ -4,25 +4,16 @@ from functools import wraps
 from io import BytesIO
 from logging.config import dictConfig
 from wsgiref import headers
-
 from flask import Flask, url_for, render_template, session, redirect,request, json, send_file
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
 from flask_table import Table, Col
-from xero_python.accounting import AccountingApi, ContactPerson, Contact, Contacts, Invoice,Invoices, LineItem, CurrencyCode
-from xero_python.api_client import ApiClient, serialize
-from xero_python.api_client.configuration import Configuration
-from xero_python.api_client.oauth2 import OAuth2Token
-from xero_python.exceptions import AccountingBadRequestException
-from xero_python.identity import IdentityApi
-from xero_python.utils import getvalue
 import dateutil
 import requests
 import logging_settings
 from invoicetable import InvoiceTable, InvoiceItem
 from lineitemtable import LineItemTable, LineItemObject
 from statementtable import StatementTable, StatementObject
-from utils import jsonify, serialize_model
 import identity, identity.web
 import config
 dictConfig(logging_settings.default_settings)
