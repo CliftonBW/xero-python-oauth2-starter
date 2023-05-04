@@ -43,45 +43,4 @@
         
 
     </div>
-    <!-- Modal -->
-    <div class="modal fade" id="confirmInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="confirmInvoiceModalTitle">Confirm Invoice</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            <div class="modal-body">
-            
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            {% if id %}<a class="btn btn-primary" href="{{ url_for('post_invoice',id=id) }}">Confirm invoice</a>{% endif %}
-            </div>
-        </div>
-        </div>
-    </div>
-
-        <!-- Modal -->
-        <div class="modal fade" id="submitInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                <h5 class="modal-title" id="submitInvoiceModalTitle">Submit Invoice</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-                <div class="modal-body">
-                
-                </div>
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                {% if id %}<a class="btn btn-primary" href="{{ url_for('send_email',id=id) }}">Send Email to Customer</a>{% endif %}
-                </div>
-            </div>
-            </div>
-        </div>
 {% endblock %}
