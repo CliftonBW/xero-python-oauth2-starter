@@ -19,7 +19,6 @@ default_settings = {
     },
     "loggers": {
         "requests_oauthlib": {"handlers": ["console"], "level": "DEBUG"},
-        "xero_python": {"handlers": ["console"], "level": "DEBUG"},
         "urllib3": {"handlers": ["console"], "level": "DEBUG"},
     },
     # "root": {"level": "DEBUG", "handlers": ["console"]},
