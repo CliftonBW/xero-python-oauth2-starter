@@ -93,24 +93,6 @@ if __name__ == "__main__":
     app.run()
 
 
-# configure flask-oauthlib application
-# TODO fetch config from https://identity.xero.com/.well-known/openid-configuration #1
-oauth = OAuth(app)
-xero = oauth.remote_app(
-    name="xero",
-    version="2",
-    client_id=app.config["CLIENT_ID"],
-    client_secret=app.config["CLIENT_SECRET"],
-    endpoint_url="https://api.xero.com/",
-    authorization_url="https://login.xero.com/identity/connect/authorize",
-    access_token_url="https://identity.xero.com/connect/token",
-    refresh_token_url="https://identity.xero.com/connect/token",
-    scope="offline_access openid profile email accounting.transactions "
-    "accounting.reports.read accounting.journals.read accounting.settings "
-    "accounting.contacts accounting.attachments assets projects",
-)  # type: OAuth2Application
-
-
 # configure xero-python sdk client
 api_client = ApiClient(
     Configuration(
@@ -123,38 +105,10 @@ api_client = ApiClient(
 )
 
 
-# configure token persistence and exchange point between flask-oauthlib and xero-python
-@xero.tokengetter
-@api_client.oauth2_token_getter
-def obtain_xero_oauth2_token():
-    return session.get("token")
-
-
-@xero.tokensaver
-@api_client.oauth2_token_saver
-def store_xero_oauth2_token(token):
-    session["token"] = token
-    session.modified = True
-
-
-def xero_token_required(function):
-    @wraps(function)
-    def decorator(*args, **kwargs):
-        xero_token = obtain_xero_oauth2_token()
-        if not xero_token:
-            return redirect(url_for("xero_login", _external=True))
-
-        return function(*args, **kwargs)
-
-    return decorator
-
-
 @app.route("/")
-#@xero_token_required
 def index():
     if not auth.get_user():
         return redirect(url_for("login"))
-    xero_access = dict(obtain_xero_oauth2_token() or {})
     code=app.config["INVOICES_CODE"]
     req = requests.get(url + 'GetInvoices',params={"code":code})
     data = req.json()['data']
@@ -170,258 +124,14 @@ def index():
     )
 
 
-@app.route("/tenants")
-#@xero_token_required
-def tenants():
-    identity_api = IdentityApi(api_client)
-    accounting_api = AccountingApi(api_client)
-
-    available_tenants = []
-    for connection in identity_api.get_connections():
-        tenant = serialize(connection)
-        if connection.tenant_type == "ORGANISATION":
-            organisations = accounting_api.get_organisations(
-                xero_tenant_id=connection.tenant_id
-            )
-            tenant["organisations"] = serialize(organisations)
-
-        available_tenants.append(tenant)
-
-    return render_template(
-        "code.html",
-        title="Xero Tenants",
-        code=json.dumps(available_tenants, sort_keys=True, indent=4),
-    )
-
-
-@app.route("/create-contact-person")
-#@xero_token_required
-def create_contact_person():
-    xero_tenant_id = get_xero_tenant_id()
-    accounting_api = AccountingApi(api_client)
-
-    contact_person = ContactPerson(
-        first_name="John",
-        last_name="Smith",
-        email_address="john.smith@24locks.com",
-        include_in_emails=True,
-    )
-    contact = Contact(
-        name="FooBar",
-        first_name="Foo",
-        last_name="Bar",
-        email_address="ben.bowden@24locks.com",
-        contact_persons=[contact_person],
-    )
-    contacts = Contacts(contacts=[contact])
-    try:
-        created_contacts = accounting_api.create_contacts(
-            xero_tenant_id, contacts=contacts
-        )  # type: Contacts
-    except AccountingBadRequestException as exception:
-        sub_title = "Error: " + exception.reason
-        code = jsonify(exception.error_data)
-    else:
-        sub_title = "Contact {} created.".format(
-            getvalue(created_contacts, "contacts.0.name", "")
-        )
-        code = serialize_model(created_contacts)
-
-    return render_template(
-        "code.html", title="Create Contacts", code=code, sub_title=sub_title
-    )
-
-
-@app.route("/create-multiple-contacts")
-#@xero_token_required
-def create_multiple_contacts():
-    xero_tenant_id = get_xero_tenant_id_demo()
-    accounting_api = AccountingApi(api_client)
-
-    contact = Contact(
-        name="George Jetson",
-        first_name="George",
-        last_name="Jetson",
-        email_address="george.jetson@aol.com",
-    )
-    # Add the same contact twice - the first one will succeed, but the
-    # second contact will fail with a validation error which we'll show.
-    contacts = Contacts(contacts=[contact, contact])
-    try:
-        created_contacts = accounting_api.create_contacts(
-            xero_tenant_id, contacts=contacts, summarize_errors=False
-        )  # type: Contacts
-    except AccountingBadRequestException as exception:
-        sub_title = "Error: " + exception.reason
-        result_list = None
-        code = jsonify(exception.error_data)
-    else:
-        sub_title = ""
-        result_list = []
-        for contact in created_contacts.contacts:
-            if contact.has_validation_errors:
-                error = getvalue(contact.validation_errors, "0.message", "")
-                result_list.append("Error: {}".format(error))
-            else:
-                result_list.append("Contact {} created.".format(contact.name))
-
-        code = serialize_model(created_contacts)
-
-    return render_template(
-        "code.html",
-        title="Create Multiple Contacts",
-        code=code,
-        result_list=result_list,
-        sub_title=sub_title,
-    )
-
-@app.route("/upload-invoices/<string:id>")
-@xero_token_required
-def upload_invoices(id):
-    accounting_api = AccountingApi(api_client)
-    update_code=app.config["UPDATE_CODE"]  
-    xero_tenant_id = ""    
-    if id == "DEMO":
-        xero_tenant_id = get_xero_tenant_id_demo()
-    else:
-        xero_tenant_id = get_xero_tenant_id_by_entity(id)
-    invoices = accounting_api.get_invoices(
-        xero_tenant_id,statuses=["AUTHORISED","PAID"]
-    )
-    for invoice in invoices.invoices:
-        invoice_number = invoice.invoice_number
-        amount_paid = invoice.amount_paid
-        amount_due = invoice.amount_due
-        req = requests.get(url + 'UpdateInvoice',params={"invoice_number": invoice_number,
-        "amount_paid": amount_paid,"amount_due": amount_due,"update_code":update_code})
-    sub_title = "Updating Invoices from Xero"
-
-    return render_template(
-        "code.html", title="Invoices", sub_title=sub_title
-    )
-
-@app.route("/update-invoices/<string:id>")
-@xero_token_required
-def update_invoices(id):
-    accounting_api = AccountingApi(api_client)
-    update_code=app.config["UPDATE_CODE"]  
-    xero_tenant_id = ""    
-    if id == "DEMO":
-        xero_tenant_id = get_xero_tenant_id_demo()
-    else:
-        xero_tenant_id = get_xero_tenant_id_by_entity(id)
-    invoices = accounting_api.get_invoices(
-        xero_tenant_id,statuses=["AUTHORISED","PAID"]
-    )
-    for invoice in invoices.invoices:
-        invoice_number = invoice.invoice_number
-        amount_paid = invoice.amount_paid
-        amount_due = invoice.amount_due
-        req = requests.get(url + 'UpdateInvoice',params={"invoice_number": invoice_number,
-        "amount_paid": amount_paid,"amount_due": amount_due,"update_code":update_code})
-    sub_title = "Updating Invoices from Xero"
-
-    return render_template(
-        "code.html", title="Invoices", sub_title=sub_title
-    )
-
-
 @app.route("/post-invoice/<string:id>")
-#@xero_token_required
 def post_invoice(id):
     post_code=app.config["POST_CODE"]  
     req4 = requests.get(url + 'PostInvoice',params={"invoice_number": id,"code":post_code})
     return redirect(url_for("get_lineitems", id=id))
 
-@app.route("/send-xero/<string:bill_entity>")
-@xero_token_required
-def send_to_xero(id):
-    entityinvoices_code=app.config["ENTITY_INVOICES_CODE"]
-    lineitem_code=app.config["LINEITEM_CODE"]
-    development = False 
-    if app.config["ENV"] == "development":
-        development = True
-    accounting_api = AccountingApi(api_client)
-    req = requests.get(url + 'GetInvoicesByBWEnitity',params={"invoice_number": id,"code":entityinvoices_code})
-    invoice = req.json()['data']
-    
-    xero_tenant_id = ""
-    temp_invoices = []
-    for details in invoice:
-        if development:
-            xero_tenant_id = get_xero_tenant_id_demo()
-        else:
-            bill_entity = details.get("bill_entity")
-            id = details.get("id")
-            xero_tenant_id = get_xero_tenant_id_by_entity(bill_entity)
-            req2 = requests.get(url + 'GetInvoiceLineItems',params={"invoice_number": id,"code":lineitem_code})
-            lineitems = req2.json()['data']
-
-            line_items = []   
-            for lineitem in lineitems:
-                line_item = LineItem(
-                description = lineitem.get("description"),
-                quantity = lineitem.get("quantity"),
-                unit_amount = lineitem.get("unit_amount"),
-                account_code = lineitem.get("account_code_xero"))         
-                line_items.append(line_item)
-            id = ""
-            bill_to = ""
-            contact = Contact()
-            for details in invoice:
-                invoice_number = details.get("invoice_number")
-                id = details.get("id")
-                bill_to = details.get("bill_to")
-                bill_entity = details.get("bill_entity")
-                primary_finance_email = details.get("primary_finance_email")
-                currency = details.get("currency")
-
-
-                contacts = accounting_api.get_contacts(xero_tenant_id=xero_tenant_id,where= 'Name=\"'+ details.get("bill_to")+ '\"')
-        
-                if contacts.contacts:
-                    for c in contacts.contacts:
-                        contact = c
-                    invoice = Invoice(
-                    type = "ACCREC",
-                    contact = contact,
-                    date = dateutil.parser.parse(details.get("invoice_date")),
-                    due_date = dateutil.parser.parse(details.get("due_date")),
-                    line_items = line_items,
-                    invoice_number = details.get("invoice_number"),
-                    reference = details.get("reference"),
-                    status = "DRAFT")
-                else:
-                    contact = Contact(
-                        name=bill_to,
-                        first_name="Finance",
-                        last_name="Team",
-                        email_address=primary_finance_email
-                    )
-                    contacts = Contacts(contacts=[contact])
-                    created_contacts = accounting_api.create_contacts(
-                        xero_tenant_id, contacts=contacts
-                    ) 
-                    for nc in created_contacts.contacts:
-                        contact = nc
-                    invoice = Invoice(
-                    type = "ACCREC",
-                    currency_code=CurrencyCode(currency),
-                    contact = contact,
-                    date = dateutil.parser.parse(details.get("invoice_date")),
-                    due_date = dateutil.parser.parse(details.get("due_date")),
-                    line_items = line_items,
-                    invoice_number = details.get("invoice_number"),
-                    reference = details.get("reference"),
-                    status = "DRAFT")
-                    temp_invoices.append(invoice)
-            invoices = Invoices( 
-                invoices = [temp_invoices])    
-            invoices = accounting_api.update_or_create_invoices(xero_tenant_id=xero_tenant_id,invoices=invoices)   
-    return redirect(url_for("get_lineitems", id=id))
 
 @app.route("/send-email/<string:id>")
-#@xero_token_required
 def send_email(id):
     invoice_code=app.config["INVOICE_CODE"]
     email_code=app.config["EMAIL_CODE"] 
@@ -432,73 +142,6 @@ def send_email(id):
         id = details.get("id")
     req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code})   
     return redirect(url_for("get_lineitems", id=id))
-
-@app.route("/xero-login")
-def xero_login():
-    redirect_url = url_for("oauth_callback", _external=True,_scheme ="https")
-    response = xero.authorize(callback_uri=redirect_url)
-    return response
-
-
-@app.route("/callback")
-def oauth_callback():
-    try:
-        response = xero.authorized_response()
-    except Exception as e:
-        print(e)
-        raise
-    # todo validate state value
-    if response is None or response.get("access_token") is None:
-        return "Access denied: response=%s" % response
-    store_xero_oauth2_token(response)
-    return redirect(url_for("index", _external=True,_scheme ="https"))
-
-
-@app.route("/xero-logout")
-def xero_logout():
-    store_xero_oauth2_token(None)
-    return redirect(url_for("index", _external=True))
-
-
-@app.route("/export-token")
-#@xero_token_required
-def export_token():
-    token = obtain_xero_oauth2_token()
-    buffer = BytesIO("token={!r}".format(token).encode("utf-8"))
-    buffer.seek(0)
-    return send_file(
-        buffer,
-        mimetype="x.python",
-        as_attachment=True,
-        attachment_filename="oauth2_token.py",
-    )
-
-@app.route("/get-accounts")
-#@xero_token_required
-def accounting_get_accounts():
-    api_instance = AccountingApi(api_client)
-    xero_tenant_id = get_xero_tenant_id()
-    
-    try:
-        api_response = api_instance.get_accounts(xero_tenant_id)
-        code = serialize_model(api_response)
-        return render_template(
-        "code.html", title="Accounts", code=code
-        )
-    except AccountingBadRequestException as e:
-        print("Exception when calling AccountingApi->getAccounts: %s\n" % e)
-
-@app.route("/refresh-token")
-#@xero_token_required
-def refresh_token():
-    xero_token = obtain_xero_oauth2_token()
-    new_token = api_client.refresh_oauth2_token()
-    return render_template(
-        "code.html",
-        title="Xero OAuth2 token",
-        code=jsonify({"Old Token": xero_token, "New token": new_token}),
-        sub_title="token refreshed",
-    )
 
 @app.route("/get-lineitems/<string:id>")
 def get_lineitems(id):
@@ -560,45 +203,6 @@ def get_invoices_azure():
         table=table
     )
 
-def get_xero_tenant_id():
-    token = obtain_xero_oauth2_token()
-    if not token:
-        return None
-
-    identity_api = IdentityApi(api_client)
-    for connection in identity_api.get_connections():
-        if connection.tenant_type == "ORGANISATION":
-            return connection.tenant_id
-
-def get_xero_tenant_id_demo():
-    token = obtain_xero_oauth2_token()
-    if not token:
-        return None
-
-
-    return "e8937b68-584e-42ca-919e-7857e82de322"
-
-def get_xero_tenant_id_by_entity(bill_entity):
-    token = obtain_xero_oauth2_token()
-    if not token:
-        return None
-
-    identity_api = IdentityApi(api_client)
-    for connection in identity_api.get_connections():
-        if bill_entity == "BWSG" and connection.tenant_name == "Blue Wireless Singapore":
-            return connection.tenant_id
-        if bill_entity == "BWNL" and connection.tenant_name == "Blue Wireless Europe":
-            return connection.tenant_id
-        if bill_entity == "BWAU" and connection.tenant_name == "Blue Wireless Australia":
-            return connection.tenant_id
-        if bill_entity == "BWMY" and connection.tenant_name == "Blue Wireless Malaysia":
-            return connection.tenant_id
-        if bill_entity == "BWNZ" and connection.tenant_name == "Blue Wireless New Zealand":
-            return connection.tenant_id
-        if bill_entity == "BWUK" and connection.tenant_name == "Blue Wireless (UK) Ltd.":
-            return connection.tenant_id
-        if bill_entity == "BWUS" and connection.tenant_name == "Blue Wireless US":
-            return connection.tenant_id
 
 if __name__ == '__main__':
     app.run(host='localhost', port=5000,ssl_context='adhoc')
