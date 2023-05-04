@@ -78,6 +78,7 @@
         var table = $('#invoicedata').DataTable({
         orderCellsTop: true,
         fixedHeader: true,
+        pageLength: 100,
         initComplete: function () {
             var api = this.api();
  
@@ -167,6 +168,7 @@
         var table = $('#lineitemdata').DataTable({
         orderCellsTop: true,
         fixedHeader: true,
+        pageLength: 100,
         initComplete: function () {
             var api = this.api();
  
@@ -218,7 +220,10 @@
         },
     });
   });
-
+  $("#confirmInvoice").on( "click", function( event ) {
+      event.preventDefault();
+      $("#sendInvoice").prop( "disabled", false );
+  });
     
 </script>
 
