@@ -89,20 +89,6 @@ def call_downstream_api():
         ).json()
     return render_template('display.html', result=api_result)
 
-if __name__ == "__main__":
-    app.run()
-
-
-# configure xero-python sdk client
-api_client = ApiClient(
-    Configuration(
-        debug=app.config["DEBUG"],
-        oauth2_token=OAuth2Token(
-            client_id=app.config["XERO_CLIENT_ID"], client_secret=app.config["XERO_CLIENT_SECRET"]
-        ),
-    ),
-    pool_threads=1,
-)
 
 
 @app.route("/")
@@ -203,7 +189,5 @@ def get_invoices_azure():
         table=table
     )
 
-
-if __name__ == '__main__':
-    app.run(host='localhost', port=5000,ssl_context='adhoc')
-    #app.run()
+if __name__ == "__main__":
+    app.run()
