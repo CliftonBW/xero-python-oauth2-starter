@@ -7,28 +7,28 @@ class InvoiceTable(Table):
     table_id = "invoicedata"
     classes = ['table table-striped'] 
     LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm'})
+    PartitionKey = Col('Invoice Month')
     invoice_number = Col('Invoice Number')
     bill_entity = Col('Bill Entity')
     bill_to = Col('Bill To')
+    local_site = Col('Local Site')
     invoice_owner = Col('Invoice Owner')   
-    invoice_date = Col('Invoice Date')
-    due_date = Col('Due Date')
-    paid_amount = Col('Paid Amount')
-    outstanding_amount = Col('Outstanding Amount')
-    overdue_date = Col('Overdue Date')
+    invoice_date = Col('Invoice Date')   
     currency = Col('Currency')
     invoice_total_amount = Col('Invoice Total Amount')
     invoice_status = Col('Invoice Status')
     payment_status = Col('Payment Status')
     tax_type = Col('Tax Type')            
-    reference = Col('Reference')
-    local_site = Col('Local Site')
+    reference = Col('Reference')  
+    due_date = Col('Due Date')
+    paid_amount = Col('Paid Amount')
+    outstanding_amount = Col('Outstanding Amount')
+    overdue_date = Col('Overdue Date')
     
-
 # Get some objects
 class InvoiceItem(object):
     def __init__(self, data):
-        self.PartitionKey = data.get("PartitionKey") 
+        self.PartitionKey = data["PartitionKey"]
         self.RowKey = data["RowKey"]
         self.id = data["id"]
         self.checkbox = ""
