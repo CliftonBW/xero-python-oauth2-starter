@@ -28,7 +28,7 @@ class InvoiceTable(Table):
 # Get some objects
 class InvoiceItem(object):
     def __init__(self, data):
-        self.PartitionKey = data["PartitionKey"]
+        self.PartitionKey = data.get("PartitionKey")
         self.RowKey = data["RowKey"]
         self.id = data["id"]
         self.checkbox = ""
