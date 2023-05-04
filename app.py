@@ -28,7 +28,7 @@ if app.config["ENV"] == "development":
 else:
     url=app.config["BILL_TOWN_URL"]
     # allow oauth2 loop to run over http (used for local testing only)
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+#os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # configure persistent session cache
 Session(app)
