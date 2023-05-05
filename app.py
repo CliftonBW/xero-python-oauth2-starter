@@ -8,7 +8,6 @@ from flask import Flask, url_for, render_template, session, redirect,request, js
 from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
 from flask_table import Table, Col
-import dateutil
 import requests
 import logging_settings
 from invoicetable import InvoiceTable, InvoiceItem
