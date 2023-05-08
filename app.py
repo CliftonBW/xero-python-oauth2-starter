@@ -119,13 +119,14 @@ def send_email(id):
     req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code})   
     return redirect(url_for("get_lineitems", id=id))
 
-@app.route("/get-lineitems/<string:id>")
-def get_lineitems(id):
+@app.route("/get-lineitems/<string:PartitionKey>/<string:id>")
+def get_lineitems(PartitionKey,id):
     lineitemcode=app.config["LINEITEM_CODE"]
     invoicecode=app.config["INVOICE_CODE"]
-    req = requests.get(url + 'GetInvoiceLineItems',params={"invoice_number": id,"code":lineitemcode})
+    lineitemdate = PartitionKey.replace('Invoice','Lineitem')
+    req = requests.get(url + 'GetInvoiceLineItems',params={"invoice_number": id,"date": lineitemdate,"code":lineitemcode})
     data = req.json()['data']
-    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"code":invoicecode})
+    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"date": PartitionKey,"code":invoicecode})
     data2 = req2.json()['data']
     items = []
 

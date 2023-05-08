@@ -6,7 +6,7 @@ import requests
 class InvoiceTable(Table):
     table_id = "invoicedata"
     classes = ['table table-striped'] 
-    LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm'})
+    LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(PartitionKey='PartitionKey',id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm'})
     PartitionKey = Col('Invoice Month')
     invoice_number = Col('Invoice Number')
     bill_entity = Col('Bill Entity')
