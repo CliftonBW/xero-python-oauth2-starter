@@ -100,24 +100,25 @@ def index():
     )
 
 
-@app.route("/post-invoice/<string:id>")
-def post_invoice(id):
+@app.route("/post-invoice/<string:PartitionKey>/<string:id>")
+def post_invoice(PartitionKey,id):
     post_code=app.config["POST_CODE"]  
     req4 = requests.get(url + 'PostInvoice',params={"invoice_number": id,"code":post_code})
-    return redirect(url_for("get_lineitems", id=id))
+    return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
 
-@app.route("/send-email/<string:id>")
-def send_email(id):
+@app.route("/send-email/<string:PartitionKey>/<string:id>")
+def send_email(PartitionKey,id):
     invoice_code=app.config["INVOICE_CODE"]
     email_code=app.config["EMAIL_CODE"] 
-    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"code":invoice_code})
-    invoice = req2.json()['data']
+    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"date": PartitionKey,"code":invoice_code})
+    invoice = req2.json()['data']   
     id = ""
     for details in invoice:
         id = details.get("id")
+        PartitionKey = details.get("PartitionKey")
     req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code})   
-    return redirect(url_for("get_lineitems", id=id))
+    return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
 @app.route("/get-lineitems/<string:PartitionKey>/<string:id>")
 def get_lineitems(PartitionKey,id):
@@ -137,6 +138,7 @@ def get_lineitems(PartitionKey,id):
     return render_template(
         "lineitemtable.html",
         id=id,
+        PartitionKey=PartitionKey,
         table=table,
         invoices=data2
     )
