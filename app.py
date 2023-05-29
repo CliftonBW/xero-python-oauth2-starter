@@ -164,6 +164,25 @@ def get_statements(account_name):
         invoices=data2
     )
 
+@app.route("/preview_invoice/<string:PartitionKey>/<string:invoice_number>")
+def preview_invoice(PartitionKey: str, invoice_number: str):
+    month = PartitionKey.replace("_Invoice", "")
+    res = requests.get(url + 'GetInvoicePDF', stream=True, params={ "month": month, "invoice_number": invoice_number})
+
+    if res.status_code == 200:
+        return send_file(res.raw, mimetype='application/pdf', as_attachment=False, download_name=f"{invoice_number} - Invoice.pdf")
+    else:
+        return "Failed to download the PDF."
+
+@app.route("/preview_statement/<string:PartitionKey>/<string:bill_to>")
+def preview_statement(PartitionKey: str, bill_to: str):
+    month = PartitionKey.replace("_Invoice", "")
+    res = requests.get(url + 'GetStatementPDF', stream=True, params={ "month": month, "bill_to": bill_to})
+
+    if res.status_code == 200:
+        return send_file(res.raw, mimetype='application/pdf', as_attachment=False, download_name=f"{bill_to} - Service Statement.pdf")
+    else:
+        return "Failed to download the PDF."
 
 
 @app.route("/get-invoices-azure")

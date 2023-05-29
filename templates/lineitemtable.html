@@ -4,9 +4,11 @@
     <div>
         <h2>{{ title }}</h2>
         <!-- Button trigger modal -->
-        {% set ns = namespace(found=false) %}
-        {% if invoices %}  
-            {% for invoice in invoices %}       
+        {% set ns = namespace(found=false, bill_to=0, invoice_number=0) %}
+        {% if invoices %}
+            {% for invoice in invoices %}
+                {% set ns.bill_to = invoice.bill_to %}
+                {% set ns.invoice_number = invoice.invoice_number %}
                 <h4>{{invoice.bill_to}}</h4>
                 <div class="container-sm border pull-left column">
                     <h6>Invoice Number: {{invoice.invoice_number}}</h6>
@@ -44,7 +46,9 @@
             <button id="sendInvoice" type="button" class="btn btn-success" data-toggle="modal" data-target="#sendEmailModal">
                 Send Email to Customer
             </button>
+            <a class="btn btn-primary" target="_blank" href="{{ url_for('preview_invoice',invoice_number=ns.invoice_number,PartitionKey=PartitionKey) }}">Preview Invoice</a>
             {% endif %}
+            <a class="btn btn-primary" target="_blank" href="{{ url_for('preview_statement',bill_to=ns.bill_to,PartitionKey=PartitionKey) }}">Preview Statement</a>
         {% endif %}
         {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}
   
