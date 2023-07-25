@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 from functools import wraps
 from io import BytesIO
@@ -182,7 +183,7 @@ def preview_statement(PartitionKey: str, bill_to: str):
     if res.status_code == 200:
         return send_file(res.raw, mimetype='application/pdf', as_attachment=False, download_name=f"{bill_to} - Service Statement.pdf")
     else:
-        return "Failed to download the PDF."
+        return "Service Statement does not exist."
 
 
 @app.route("/get-invoices-azure")

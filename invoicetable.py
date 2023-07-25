@@ -30,6 +30,7 @@ class InvoiceItem(object):
     def __init__(self, data):
         self.PartitionKey = data.get("PartitionKey")
         self.RowKey = data["RowKey"]
+        self.updated: data["updated"]
         self.id = data["id"]
         self.checkbox = ""
         self.LineItems = data
