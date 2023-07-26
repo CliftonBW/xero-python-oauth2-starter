@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\clift\OneDrive\Documents\GitHub\xero-python-oauth2-starter\.venv"
+VIRTUAL_ENV="C:\Users\CliftonNg\Documents\GitHub\xero-python-oauth2-starter\.venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
