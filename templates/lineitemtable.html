@@ -9,8 +9,8 @@
             {% for invoice in invoices %}
                 {% set ns.bill_to = invoice.bill_to %}
                 {% set ns.invoice_number = invoice.invoice_number %}
-                <h4>{{invoice.bill_to}}</h4>
                 <div class="container-sm border pull-left column">
+                    <h6>Billed To: {{invoice.bill_to}}</h6>
                     <h6>Invoice Number: {{invoice.invoice_number}}</h6>
                     <h6>Billing Street: {{invoice.billing_street}}</h6>
                     <h6>Billing Country: {{invoice.billing_country}}</h6>
@@ -22,6 +22,7 @@
                     
                 </div>
                 <div class="container-sm border pull-right column">
+                    <h6>Last Updated: {{invoice.updated}}</h6>                   
                     <h6>Invoice Status: {{invoice.invoice_status}}</h6>
                     <h6>Payment Status: {{invoice.payment_status}}</h6>
                     <h6>Invoice Date: {{invoice.invoice_date}}</h6>
