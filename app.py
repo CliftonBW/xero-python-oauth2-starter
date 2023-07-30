@@ -88,7 +88,7 @@ def index():
         return redirect(url_for("login"))
     code=app.config["INVOICES_CODE"]
     req = requests.get(url + 'GetInvoices',params={"code":code})
-    data = req.json()['data']
+    data = req.json()['data']  
     items = []
     for d in data:
         items.append(InvoiceItem(data=d))
@@ -203,4 +203,4 @@ def get_invoices_azure():
     )
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='localhost')
