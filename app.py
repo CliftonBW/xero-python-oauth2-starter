@@ -103,8 +103,8 @@ def index():
 
 @app.route("/post-invoice/<string:PartitionKey>/<string:id>")
 def post_invoice(PartitionKey,id):
-    post_code=app.config["POST_CODE"]  
-    req4 = requests.get(url + 'PostInvoice',params={"invoice_number": id,"code":post_code})
+    post_code=app.config["POST_CODE"] 
+    req4 = requests.get(url + 'PostInvoice',params={"invoice_number": id,"code":post_code,"date":PartitionKey})
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
 
