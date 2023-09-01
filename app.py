@@ -118,7 +118,7 @@ def send_email(PartitionKey,id):
     for details in invoice:
         id = details.get("id")
         PartitionKey = details.get("PartitionKey")
-    req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code})   
+    req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code,"date": PartitionKey})   
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
 @app.route("/get-lineitems/<string:PartitionKey>/<string:id>")
