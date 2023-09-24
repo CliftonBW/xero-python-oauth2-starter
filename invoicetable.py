@@ -65,4 +65,4 @@ class InvoiceItem(object):
         self.invoice_number_key = data["invoice_number_key"]
         self.primary_finance_email = data["primary_finance_email"]
         self.finance_email = data["finance_email"]
-
+        self.hidden = 'hidden'

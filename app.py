@@ -54,20 +54,24 @@ def login():
         redirect_uri=url_for("auth_response", _external=True),  # Optional. If present, this absolute URL must match your app's redirect_uri registered in Azure Portal
         ))
 
+def token_required(function):
+    @wraps(function)
+    def decorator(*args, **kwargs):
+        if not auth.get_user():
+            return redirect(url_for("login"))
+
+        return function(*args, **kwargs)
+
+    return decorator
 @app.route(config.REDIRECT_PATH)
 def auth_response():
     result = auth.complete_log_in(request.args)
     return render_template("auth_error.html", result=result) if "error" in result else redirect(url_for("index"))
 
+@token_required
 @app.route("/logout")
 def logout():
     return redirect(auth.log_out(url_for("index", _external=True)))
-
-# @app.route("/")
-# def index():
-#     if not auth.get_user():
-#         return redirect(url_for("login"))
-#     return render_template('index.html', user=auth.get_user(), version=identity.__version__)
 
 @app.route("/call_downstream_api")
 def call_downstream_api():
@@ -81,11 +85,9 @@ def call_downstream_api():
     return render_template('display.html', result=api_result)
 
 
-
+@token_required
 @app.route("/")
 def index():
-    if not auth.get_user():
-        return redirect(url_for("login"))
     code=app.config["INVOICES_CODE"]
     req = requests.get(url + 'GetInvoices',params={"code":code})
     data = req.json()['data']
@@ -100,14 +102,14 @@ def index():
         table=table
     )
 
-
+@token_required
 @app.route("/post-invoice/<string:PartitionKey>/<string:id>")
 def post_invoice(PartitionKey,id):
     post_code=app.config["POST_CODE"] 
     req4 = requests.get(url + 'PostInvoice',params={"invoice_number": id,"code":post_code,"date":PartitionKey})
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
-
+@token_required
 @app.route("/send-email/<string:PartitionKey>/<string:id>")
 def send_email(PartitionKey,id):
     invoice_code=app.config["INVOICE_CODE"]
@@ -121,6 +123,7 @@ def send_email(PartitionKey,id):
     req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code,"date": PartitionKey})   
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
+@token_required
 @app.route("/get-lineitems/<string:PartitionKey>/<string:id>")
 def get_lineitems(PartitionKey,id):
     lineitemcode=app.config["LINEITEM_CODE"]
@@ -144,6 +147,7 @@ def get_lineitems(PartitionKey,id):
         invoices=data2
     )
 
+@token_required
 @app.route("/get-statements/<string:account_name>")
 def get_statements(account_name):
     statementcode=app.config["STATEMENT_CODE"]
@@ -165,6 +169,7 @@ def get_statements(account_name):
         invoices=data2
     )
 
+@token_required
 @app.route("/preview_invoice/<string:PartitionKey>/<string:invoice_number>")
 def preview_invoice(PartitionKey: str, invoice_number: str):
     month = PartitionKey.replace("_Invoice", "")
@@ -175,6 +180,7 @@ def preview_invoice(PartitionKey: str, invoice_number: str):
     else:
         return "Failed to download the PDF."
 
+@token_required
 @app.route("/preview_statement/<string:PartitionKey>/<string:bill_to>")
 def preview_statement(PartitionKey: str, bill_to: str):
     month = PartitionKey.replace("_Invoice", "")
@@ -185,7 +191,7 @@ def preview_statement(PartitionKey: str, bill_to: str):
     else:
         return "Service Statement does not exist."
 
-
+@token_required
 @app.route("/get-invoices-azure")
 def get_invoices_azure():
     code=app.config["INVOICES_CODE"]

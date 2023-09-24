@@ -9,6 +9,7 @@
             {% for invoice in invoices %}
                 {% set ns.bill_to = invoice.bill_to %}
                 {% set ns.invoice_number = invoice.invoice_number %}
+                {% set ns.submitted = false %}
                 <div class="container-sm border pull-left column">
                     <h6>Billed To: {{invoice.bill_to}}</h6>
                     <h6>Invoice Number: {{invoice.invoice_number}}</h6>
@@ -35,18 +36,25 @@
                 {% if 'Confirm' == invoice.invoice_status %}
                     {% set ns.found = true %}
                 {% endif %}
+                {% if 'Submitted' == invoice.invoice_status %}
+                    {% set ns.submitted = true %}
+                {% endif %}
             {% endfor %}                 
         {% endif %}
         </form>
 
         {% if id %}
-        <button id="confirmInvoice" type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmInvoiceModal">
-            Confirm Invoice
-        </button>
+            {% if ns.submitted == false%}
+            <button id="confirmInvoice" type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmInvoiceModal">
+                Confirm Invoice
+            </button>
+            {% endif %}
             {% if ns.found%}
             <button id="sendInvoice" type="button" class="btn btn-success" data-toggle="modal" data-target="#sendEmailModal">
                 Send Email to Customer
-            </button>
+            </button>         
+            {% endif %}
+            {% if ns.found or ns.submitted%}
             <a class="btn btn-primary" target="_blank" href="{{ url_for('preview_invoice',invoice_number=ns.invoice_number,PartitionKey=PartitionKey) }}">Preview Invoice</a>
             {% endif %}
             <a class="btn btn-primary" target="_blank" href="{{ url_for('preview_statement',bill_to=ns.bill_to,PartitionKey=PartitionKey) }}">Preview Statement</a>

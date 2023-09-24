@@ -45,72 +45,104 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/select/1.5.0/js/dataTables.select.min.js"></script>
 <script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
-<!--<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>-->
 <script>
-      $(document).ready(function () {
-        $('#invoicedata thead tr')
+  $(document).ready(function () {
+    $('#invoicedata thead tr')
         .clone(true)
         .addClass('filters')
         .appendTo('#invoicedata thead');
-        var table = $('#invoicedata').DataTable({
-        orderCellsTop: true,
-        fixedHeader: true,
-        pageLength: 100,
-        initComplete: function () {
-            var api = this.api();
- 
-            // For each column
-            api
-                .columns()
-                .eq(0)
-                .each(function (colIdx) {
-                    // Set the header cell to contain the input element
-                    var cell = $('.filters th').eq(
-                        $(api.column(colIdx).header()).index()
-                    );
-                    var title = $(cell).text();
-                    $(cell).html('<input type="text" placeholder="' + title + '" />');
- 
-                    // On every keypress in this input
-                    $(
-                        'input',
-                        $('.filters th').eq($(api.column(colIdx).header()).index())
-                    )
-                        .off('keyup change')
-                        .on('change', function (e) {
-                            // Get the search value
-                            $(this).attr('title', $(this).val());
-                            var regexr = '({search})'; //$(this).parents('th').find('select').val();
- 
-                            var cursorPosition = this.selectionStart;
-                            // Search the column for that value
-                            api
-                                .column(colIdx)
-                                .search(
-                                    this.value != ''
-                                        ? regexr.replace('{search}', '(((' + this.value + ')))')
-                                        : '',
-                                    this.value != '',
-                                    this.value == ''
-                                )
-                                .draw();
-                        })
-                        .on('keyup', function (e) {
-                            e.stopPropagation();
- 
-                            $(this).trigger('change');
-                            $(this)
-                                .focus()[0]
-                                .setSelectionRange(cursorPosition, cursorPosition);
-                        });
-                });
+      const table1 = $('#invoicedata').DataTable({
+      orderCellsTop: true,
+      fixedHeader: true,
+      pageLength: 100,
+      initComplete: function () {
+          var api = this.api();
+
+          // For each column
+          api
+              .columns()
+              .eq(0)
+              .each(function (colIdx) {
+                  // Set the header cell to contain the input element
+                  var cell = $('.filters th').eq(
+                      $(api.column(colIdx).header()).index()
+                  );
+                  var title = $(cell).text();
+                  $(cell).html('<input type="text" placeholder="' + title + '" />');
+
+                  // On every keypress in this input
+                  $(
+                      'input',
+                      $('.filters th').eq($(api.column(colIdx).header()).index())
+                  )
+                      .off('keyup change')
+                      .on('change', function (e) {
+                          // Get the search value
+                          $(this).attr('title', $(this).val());
+                          var regexr = '({search})'; //$(this).parents('th').find('select').val();
+
+                          var cursorPosition = this.selectionStart;
+                          // Search the column for that value
+                          api
+                              .column(colIdx)
+                              .search(
+                                  this.value != ''
+                                      ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                      : '',
+                                  this.value != '',
+                                  this.value == ''
+                              )
+                              .draw();
+                      })
+                      .on('keyup', function (e) {
+                          e.stopPropagation();
+
+                          $(this).trigger('change');
+                          $(this)
+                              .focus()[0]
+                              .setSelectionRange(cursorPosition, cursorPosition);
+                      });
+              });
         },
-    });
+      });
+      document.querySelectorAll('a.toggle-vis').forEach((el) => {
+        el.addEventListener('click', function (e) {
+            e.preventDefault();
+    
+            let columnIdx10 = 10;
+            let columnIdx11 = 11;
+            let columnIdx12 = 12;
+            let columnIdx13 = 13;
+            let columnIdx14 = 14;
+            let columnIdx15 = 15;
+            let columnIdx16 = 16;
+            let columnIdx17 = 17;
+
+            let column10 = table1.column(columnIdx10);
+            let column11 = table1.column(columnIdx11);
+            let column12 = table1.column(columnIdx12);
+            let column13 = table1.column(columnIdx13);
+            let column14 = table1.column(columnIdx14);
+            let column15 = table1.column(columnIdx15);
+            let column16 = table1.column(columnIdx16);
+            let column17 = table1.column(columnIdx17);
+
+            // Toggle the visibility
+            column10.visible(!column10.visible());
+            column11.visible(!column11.visible());
+            column12.visible(!column12.visible());
+            column13.visible(!column13.visible());
+            column14.visible(!column14.visible());
+            column15.visible(!column15.visible());
+            column16.visible(!column16.visible());
+            column17.visible(!column17.visible());
+        });
+      });
 
       $('#frm-example').on('submit', function(e){
       var form = this;
       
-      var rows_selected = table.column(0).checkboxes.selected();
+      var rows_selected = table1.column(0).checkboxes.selected();
 
       // Iterate over all selected checkboxes
       $.each(rows_selected, function(index, rowId){
@@ -142,7 +174,7 @@
         .clone(true)
         .addClass('filters')
         .appendTo('#lineitemdata thead');
-        var table = $('#lineitemdata').DataTable({
+        const table = $('#lineitemdata').DataTable({
         orderCellsTop: true,
         fixedHeader: true,
         pageLength: 100,
@@ -196,13 +228,60 @@
                 });
         },
     });
+
+    $('#invoicedata tbody tr').each( function() {
+        var sTitle;
+        var nTds = $('td', this);
+        var InvoiceMonth = $(nTds[1]).text();
+        var InvoiceNumber = $(nTds[2]).text();
+        var BillTo = $(nTds[3]).text();
+        var LocalSite = $(nTds[4]).text();
+        var InvoiceStatus = $(nTds[5]).text();
+        var invoice_total_amount = $(nTds[6]).text();
+        var invoice_owner = $(nTds[7]).text();
+        var bill_entity = $(nTds[8]).text();
+        var invoice_date = $(nTds[9]).text();
+        var currency = $(nTds[10]).text();
+        var payment_status = $(nTds[11]).text();
+        var tax_type = $(nTds[12]).text();
+        var reference = $(nTds[13]).text();
+        var paid_amount = $(nTds[14]).text();
+        var outstanding_amount = $(nTds[15]).text();
+        var due_date = $(nTds[16]).text();
+        var overdue_date = $(nTds[17]).text();
+        
+        
+         
+        
+        sTitle =  'Invoice Number: ' + InvoiceNumber + '\n' 
+                  + 'Currency: '  + currency + '\n'
+                  + 'Payment Status: '  + payment_status + '\n'
+                  + 'Tax Type: '  + tax_type + '\n'
+                  + 'Reference: '  + reference + '\n'
+                  + 'Paid Amount: '  + paid_amount + '\n'
+                  + 'Outstanding Amount: '  + outstanding_amount + '\n'
+                  + 'Due Date: '  + due_date + '\n'
+                  + 'Overdue Date: '  + overdue_date + '\n';
+                  
+         
+        this.setAttribute( 'title', sTitle );
+      } );
+     
+     
+    /* Apply the tooltips */
+    table.$('tr').tooltip( {
+        "delay": 0,
+        "track": true,
+        "fade": 250
+    } );
   });
   $("#confirmInvoice").on( "click", function( event ) {
       event.preventDefault();
       $("#sendInvoice").prop( "disabled", false );
   });
-    
 </script>
+
+
 
   {% endblock %}
 </body>

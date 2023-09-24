@@ -3,44 +3,8 @@
 {% block content %}
     <div>
         <h2>{{ title }}</h2>
-        <!-- Button trigger modal -->
-
-        {% if invoices %}  
-            {% for invoice in invoices %}       
-                <h4>{{invoice.bill_to}}</h4>
-                <h6>Invoice Number: {{invoice.invoice_number}}</h6>
-                <h6>Reference: {{invoice.reference}}</h6>
-                <h6>Attention: {{invoice.attention}}</h6>
-                <h6>Currency: {{invoice.currency}}</h6>
-                <h6>Local Site: {{invoice.local_site}}</h6>
-                <h6 class="pull-right">Invoice Date: {{invoice.invoice_date}}</h6>
-                <h6 class="pull-right">Due Date: {{invoice.due_date}}</h6>
-                <h6 class="pull-right">Invoice Total Amount: {{invoice.invoice_total_amount}}</h6>   
-            {% endfor %}                 
-        {% endif %}
-        </form>
-
-        {% if id %}
-        <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#confirmInvoiceModal">
-            Confirm Invoice
-        </button>
-        <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#submitInvoiceModal">
-            Send Email to Customer
-        </button>
-        {% endif %}
-        {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}
-        <form id="frm-example" action="/path/to/your/script.php" method="POST">
-            <!-- <button id ="test" type="submit" class="btn btn-outline-primary">
-                Test
-            </button>     -->
-            {% if table %}{{table}}{% endif %} 
-            <!-- <p><b>Selected rows data:</b></p>
-            <pre id="example-console-rows"></pre>
-
-            <p><b>Form data as submitted to the server:</b></p>
-            <pre id="example-console-form"></pre> -->
-        </form>
-        
-
+        {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}   
+        <!-- Toggle column: <a class="toggle-vis" data-column="0">Show/Hide Extra Columns</a>     -->
+        {% if table %}{{table}}{% endif %}        
     </div>
 {% endblock %}
