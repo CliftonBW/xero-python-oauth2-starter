@@ -4,65 +4,69 @@ import requests
 
 # Declare your table
 class InvoiceTable(Table):
-    table_id = "invoicedata"
+    table_id = "invoicedata" 
     classes = ['table table-striped'] 
-    LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(PartitionKey='PartitionKey',id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm'})
-    PartitionKey = Col('Invoice Month')
-    invoice_number = Col('Invoice Number')   
-    bill_to = Col('Bill To')
-    local_site = Col('Local Site')
-    invoice_status = Col('Invoice Status')
-    invoice_total_amount = Col('Invoice Total Amount') 
-    invoice_owner = Col('Invoice Owner') 
-    bill_entity = Col('Bill Entity')  
-    invoice_date = Col('Invoice Date')   
-    currency = Col('Currency')   
-    payment_status = Col('Payment Status')
-    tax_type = Col('Tax Type')            
-    reference = Col('Reference')    
-    paid_amount = Col('Paid Amount')
-    outstanding_amount = Col('Outstanding Amount')
-    due_date = Col('Due Date')
-    overdue_date = Col('Overdue Date')
-    
-# Get some objects
+    LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(PartitionKey='PartitionKey',id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm no-filter','target':'_blank'},)
+    PartitionKey = Col('Invoice Month',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'PartitionKey'})
+    invoice_number = Col('Invoice Number',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'invoice_number'})   
+    bill_to = Col('Bill To',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'bill_to'})
+    local_site = Col('Local Site',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'local_site'})
+    invoice_status = Col('Invoice Status',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'invoice_status'})
+    invoice_total_amount= Col('invoice_total_amount',column_html_attrs={'hidden': 'true','name':'invoice_total_amount'})
+    invoice_tax_amount= Col('invoice_tax_amount',column_html_attrs={'hidden': 'true','name':'invoice_tax_amount'})
+    invoice_total_amount_with_tax = Col('Invoice Total Amount With Tax',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'invoice_total_amount_with_tax'}) 
+    invoice_owner = Col('Invoice Owner',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'invoice_owner'}) 
+    bill_entity = Col('Bill Entity',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'bill_entity'})    
+    invoice_date = Col('Invoice Date',th_html_attrs={'class': '.filter'},column_html_attrs={'hidden': 'true','name':'invoice_date'})   
+    currency = Col('Currency',column_html_attrs={'hidden': 'true','name':'currency'})   
+    payment_status = Col('Payment Status',column_html_attrs={'hidden': 'true','name':'payment_status'})            
+    paid_amount = Col('Paid Amount',column_html_attrs={'hidden': 'true','name':'paid_amount'})
+    outstanding_amount = Col('Outstanding Amount',column_html_attrs={'hidden': 'true','name':'outstanding_amount'})
+    due_date = Col('Due Date',column_html_attrs={'hidden': 'true','name':'due_date'})
+    primary_finance_email = Col('primary_finance_email',column_html_attrs={'hidden': 'true','name':'primary_finance_email'})
+    finance_email = Col('finance_email',column_html_attrs={'hidden': 'true','name':'finance_email'})
+    collection  = Col('collection',column_html_attrs={'hidden': 'true','name':'collection'})
+    Child = Col('More Information',column_html_attrs={'class': 'dt-control .filter'}) 
+
+
 class InvoiceItem(object):
     def __init__(self, data):
         self.PartitionKey = data.get("PartitionKey")
-        self.RowKey = data["RowKey"]
-        self.updated: data["updated"]
-        self.id = data["id"]
+        self.RowKey = data.get("RowKey")
+        self.id = data.get("id")
+        self.Child = ""
         self.checkbox = ""
         self.LineItems = data
-        self.collection = data["collection"]
-        self.bill_to = data["bill_to"]
-        self.attention = data["attention"]
-        self.billing_street = data["billing_street"]
-        self.billing_state = data["billing_state"]
-        self.billing_code = data["billing_code"]
-        self.billing_city = data["billing_city"]
-        self.floor_unit = data["floor_unit"]
-        self.invoice_date = data["invoice_date"] if "invoice_date" in data else ""
-        self.end_invoice_date = data["end_invoice_date"]
+        self.collection = data.get("collection")
+        self.bill_to = data.get("bill_to")
+        self.attention = data.get("attention")
+        self.billing_street = data.get("billing_street")
+        self.billing_state = data.get("billing_state")
+        self.billing_code = data.get("billing_code")
+        self.billing_city = data.get("billing_city")
+        self.floor_unit = data.get("floor_unit")
+        self.invoice_date = data.get("invoice_date")
+        self.end_invoice_date = data.get("end_invoice_date")
         self.reference = data.get("reference")
-        self.due_date = data["due_date"]
-        self.invoice_owner_email = data["invoice_owner_email"]
-        self.invoice_owner = data["invoice_owner"]
-        self.local_site = data["local_site"]
-        self.description = data["description"]
-        self.overdue_date = data["overdue_date"]
-        self.paid_amount = data["paid_amount"]
-        self.outstanding_amount = data["outstanding_amount"]
-        self.invoice_total_amount = data["invoice_total_amount"]
-        self.invoice_number = data["invoice_number"]
-        self.invoice_status = data["invoice_status"]
-        self.payment_status = data["payment_status"]
+        self.due_date = data.get("due_date")
+        self.invoice_owner_email = data.get("invoice_owner_email")
+        self.invoice_owner = data.get("invoice_owner")
+        self.local_site = data.get("local_site")
+        self.description = data.get("description")
+        self.overdue_date = data.get("overdue_date")
+        self.paid_amount = data.get("paid_amount")
+        self.outstanding_amount = data.get("outstanding_amount")
+        self.invoice_total_amount = data.get("invoice_total_amount")
+        self.invoice_tax_amount = data.get("invoice_tax_amount")
+        self.invoice_total_amount_with_tax = data.get("invoice_total_amount_with_tax")
+        self.invoice_number = data.get("invoice_number")
+        self.invoice_status = data.get("invoice_status")
+        self.payment_status = data.get("payment_status")
         self.tax_type = data.get("tax_type")
-        self.currency = data["currency"]
-        self.bill_entity = data["bill_entity"]
-        self.sub_account = data["sub_account"]
-        self.seperate_order = data["seperate_order"]
-        self.invoice_number_key = data["invoice_number_key"]
-        self.primary_finance_email = data["primary_finance_email"]
-        self.finance_email = data["finance_email"]
-        self.hidden = 'hidden'
+        self.currency = data.get("currency")
+        self.bill_entity = data.get("bill_entity")
+        self.sub_account = data.get("sub_account")
+        self.seperate_order = data.get("seperate_order")
+        self.invoice_number_key = data.get("invoice_number_key")
+        self.primary_finance_email = data.get("primary_finance_email")
+        self.finance_email = data.get("finance_email")

@@ -10,6 +10,7 @@ from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
 from flask_table import Table, Col
 import requests
+from bill_town_api import getBillTownInvoice, getBillTownInvoiceLineItems, getBillTownInvoices, getBillTownStatementByCompany, postBillTownInvoice, previewBillTownInvoice, previewBillTownStatement, sendEmailBillTownInvoice
 import logging_settings
 from invoicetable import InvoiceTable, InvoiceItem
 from lineitemtable import LineItemTable, LineItemObject
@@ -87,10 +88,8 @@ def call_downstream_api():
 
 @token_required
 @app.route("/")
-def index():
-    code=app.config["INVOICES_CODE"]
-    req = requests.get(url + 'GetInvoices',params={"code":code})
-    data = req.json()['data']
+def index():   
+    data = getBillTownInvoices()
     items = []
     for d in data:
         items.append(InvoiceItem(data=d))
@@ -105,34 +104,21 @@ def index():
 @token_required
 @app.route("/post-invoice/<string:PartitionKey>/<string:id>")
 def post_invoice(PartitionKey,id):
-    post_code=app.config["POST_CODE"] 
-    req4 = requests.get(url + 'PostInvoice',params={"invoice_number": id,"code":post_code,"date":PartitionKey})
+    req4 = postBillTownInvoice(PartitionKey,id)
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
 @token_required
 @app.route("/send-email/<string:PartitionKey>/<string:id>")
 def send_email(PartitionKey,id):
-    invoice_code=app.config["INVOICE_CODE"]
-    email_code=app.config["EMAIL_CODE"] 
-    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"date": PartitionKey,"code":invoice_code})
-    invoice = req2.json()['data']   
-    id = ""
-    for details in invoice:
-        id = details.get("id")
-        PartitionKey = details.get("PartitionKey")
-    req3 = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code,"date": PartitionKey})   
+    req = sendEmailBillTownInvoice(PartitionKey,id) 
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
 @token_required
 @app.route("/get-lineitems/<string:PartitionKey>/<string:id>")
 def get_lineitems(PartitionKey,id):
-    lineitemcode=app.config["LINEITEM_CODE"]
-    invoicecode=app.config["INVOICE_CODE"]
     lineitemdate = PartitionKey.replace('Invoice','Lineitem')
-    req = requests.get(url + 'GetInvoiceLineItems',params={"invoice_number": id,"date": lineitemdate,"code":lineitemcode})
-    data = req.json()['data']
-    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"date": PartitionKey,"code":invoicecode})
-    data2 = req2.json()['data']
+    data = getBillTownInvoiceLineItems(id,lineitemdate)
+    data2 = getBillTownInvoice(id,PartitionKey)
     items = []
 
     for d in data:
@@ -148,14 +134,11 @@ def get_lineitems(PartitionKey,id):
     )
 
 @token_required
-@app.route("/get-statements/<string:account_name>")
-def get_statements(account_name):
-    statementcode=app.config["STATEMENT_CODE"]
-    invoicecode=app.config["INVOICE_CODE"]
-    req = requests.get(url + 'GetStatementByCompany',params={"invoice_number": account_name,"code":statementcode})
-    data = req.json()['data']
-    req2 = requests.get(url + 'GetInvoice',params={"invoice_number": id,"code":invoicecode})
-    data2 = req2.json()['data']
+@app.route("/get-statements/<string:account_name>/<string:PartitionKey>/<string:id>")
+def get_statements(account_name,PartitionKey,id):
+
+    data = getBillTownStatementByCompany(account_name)
+    data2 = getBillTownInvoice(id,PartitionKey)
     items = []
 
     for d in data:
@@ -173,7 +156,7 @@ def get_statements(account_name):
 @app.route("/preview_invoice/<string:PartitionKey>/<string:invoice_number>")
 def preview_invoice(PartitionKey: str, invoice_number: str):
     month = PartitionKey.replace("_Invoice", "")
-    res = requests.get(url + 'GetInvoicePDF', stream=True, params={ "month": month, "invoice_number": invoice_number})
+    res = previewBillTownInvoice(month,invoice_number)
 
     if res.status_code == 200:
         return send_file(res.raw, mimetype='application/pdf', as_attachment=False, download_name=f"{invoice_number} - Invoice.pdf")
@@ -184,29 +167,12 @@ def preview_invoice(PartitionKey: str, invoice_number: str):
 @app.route("/preview_statement/<string:PartitionKey>/<string:bill_to>")
 def preview_statement(PartitionKey: str, bill_to: str):
     month = PartitionKey.replace("_Invoice", "")
-    res = requests.get(url + 'GetStatementPDF', stream=True, params={ "month": month, "bill_to": bill_to})
+    res = previewBillTownStatement(month,bill_to)
 
     if res.status_code == 200:
         return send_file(res.raw, mimetype='application/pdf', as_attachment=False, download_name=f"{bill_to} - Service Statement.pdf")
     else:
         return "Service Statement does not exist."
-
-@token_required
-@app.route("/get-invoices-azure")
-def get_invoices_azure():
-    code=app.config["INVOICES_CODE"]
-    req = requests.get(url + 'GetInvoices',params={"code":code})
-    data = req.json()['data']
-    items = []
-    for d in data:
-        items.append(InvoiceItem(data=d))
-
-    table = InvoiceTable(items)
-    return render_template(
-        "table.html",
-        title="Invoices",
-        table=table
-    )
 
 if __name__ == "__main__":
     app.run(host='localhost')

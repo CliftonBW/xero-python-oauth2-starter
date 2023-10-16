@@ -2,9 +2,9 @@
 
 {% block content %}
     <div>
+        
         <h2>{{ title }}</h2>
         {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}   
-        <!-- Toggle column: <a class="toggle-vis" data-column="0">Show/Hide Extra Columns</a>     -->
         {% if table %}{{table}}{% endif %}        
     </div>
 {% endblock %}
