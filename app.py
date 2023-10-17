@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
-import os
 from functools import wraps
-from io import BytesIO
+import logging
 from logging.config import dictConfig
-from wsgiref import headers
 from flask import Flask, url_for, render_template, session, redirect,request, json, send_file
-from flask_oauthlib.contrib.client import OAuth, OAuth2Application
 from flask_session import Session
-from flask_table import Table, Col
 import requests
 from bill_town_api import getBillTownInvoice, getBillTownInvoiceLineItems, getBillTownInvoices, getBillTownStatementByCompany, postBillTownInvoice, previewBillTownInvoice, previewBillTownStatement, sendEmailBillTownInvoice
 import logging_settings
@@ -23,7 +18,9 @@ dictConfig(logging_settings.default_settings)
 app = Flask(__name__)
 app.config.from_object("default_settings")
 app.config.from_pyfile("config.py", silent=True)
+
 url = ""
+scope = app.config['SCOPE']
 if app.config["ENV"] == "development":
     url=app.config["LOCAL_URL"]
 else:
@@ -55,23 +52,27 @@ def login():
         redirect_uri=url_for("auth_response", _external=True),  # Optional. If present, this absolute URL must match your app's redirect_uri registered in Azure Portal
         ))
 
-def token_required(function):
-    @wraps(function)
-    def decorator(*args, **kwargs):
-        if not auth.get_user():
-            return redirect(url_for("login"))
 
-        return function(*args, **kwargs)
 
-    return decorator
+def token_required():
+    token = auth.get_token_for_user(config.SCOPE)
+    if "error" in token:
+        return True,redirect(url_for("login"))
+    else:
+        return False,""
+
+
 @app.route(config.REDIRECT_PATH)
 def auth_response():
     result = auth.complete_log_in(request.args)
     return render_template("auth_error.html", result=result) if "error" in result else redirect(url_for("index"))
 
-@token_required
+
 @app.route("/logout")
 def logout():
+    valid,path = token_required()
+    if valid:
+        return path
     return redirect(auth.log_out(url_for("index", _external=True)))
 
 @app.route("/call_downstream_api")
@@ -85,10 +86,11 @@ def call_downstream_api():
         ).json()
     return render_template('display.html', result=api_result)
 
-
-@token_required
 @app.route("/")
 def index():   
+    valid,path = token_required()
+    if valid:
+        return path
     data = getBillTownInvoices()
     items = []
     for d in data:
@@ -101,21 +103,30 @@ def index():
         table=table
     )
 
-@token_required
+
 @app.route("/post-invoice/<string:PartitionKey>/<string:id>")
 def post_invoice(PartitionKey,id):
+    valid,path = token_required()
+    if valid:
+        return path
     req4 = postBillTownInvoice(PartitionKey,id)
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
-@token_required
+
 @app.route("/send-email/<string:PartitionKey>/<string:id>")
 def send_email(PartitionKey,id):
+    valid,path = token_required()
+    if valid:
+        return path
     req = sendEmailBillTownInvoice(PartitionKey,id) 
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
-@token_required
+
 @app.route("/get-lineitems/<string:PartitionKey>/<string:id>")
 def get_lineitems(PartitionKey,id):
+    valid,path = token_required()
+    if valid:
+        return path
     lineitemdate = PartitionKey.replace('Invoice','Lineitem')
     data = getBillTownInvoiceLineItems(id,lineitemdate)
     data2 = getBillTownInvoice(id,PartitionKey)
@@ -133,10 +144,12 @@ def get_lineitems(PartitionKey,id):
         invoices=data2
     )
 
-@token_required
+
 @app.route("/get-statements/<string:account_name>/<string:PartitionKey>/<string:id>")
 def get_statements(account_name,PartitionKey,id):
-
+    valid,path = token_required()
+    if valid:
+        return path
     data = getBillTownStatementByCompany(account_name)
     data2 = getBillTownInvoice(id,PartitionKey)
     items = []
@@ -152,9 +165,12 @@ def get_statements(account_name,PartitionKey,id):
         invoices=data2
     )
 
-@token_required
+
 @app.route("/preview_invoice/<string:PartitionKey>/<string:invoice_number>")
 def preview_invoice(PartitionKey: str, invoice_number: str):
+    valid,path = token_required()
+    if valid:
+        return path
     month = PartitionKey.replace("_Invoice", "")
     res = previewBillTownInvoice(month,invoice_number)
 
@@ -163,9 +179,12 @@ def preview_invoice(PartitionKey: str, invoice_number: str):
     else:
         return "Failed to download the PDF."
 
-@token_required
+
 @app.route("/preview_statement/<string:PartitionKey>/<string:bill_to>")
 def preview_statement(PartitionKey: str, bill_to: str):
+    valid,path = token_required()
+    if valid:
+        return path
     month = PartitionKey.replace("_Invoice", "")
     res = previewBillTownStatement(month,bill_to)
 

@@ -65,9 +65,7 @@ def postBillTownInvoice(PartitionKey,id):
     return data
 
 def sendEmailBillTownInvoice(PartitionKey,id):
-    req = requests.get(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code,"date": PartitionKey}) 
-    data = req.json()['data']
-    return data
+    req = requests.post(url + 'SendInvoiceEmail',params={"invoice_number": id,"code":email_code,"date": PartitionKey}) 
 
 def previewBillTownInvoice(month,invoice_number):
     res = requests.get(url + 'GetInvoicePDF', stream=True, params={ "month": month, "invoice_number": invoice_number})

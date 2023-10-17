@@ -5,6 +5,8 @@
         
         <h2>{{ title }}</h2>
         {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}   
-        {% if table %}{{table}}{% endif %}        
+        <div class="row">
+            {% if table %}{{table}}{% endif %}
+        </div>     
     </div>
 {% endblock %}

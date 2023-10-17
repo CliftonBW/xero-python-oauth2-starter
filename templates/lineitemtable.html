@@ -1,110 +1,170 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div>
-        <h2>{{ title }}</h2>
-        <!-- Button trigger modal -->
-        {% set ns = namespace(found=false, bill_to=0, invoice_number=0) %}
-        {% if invoices %}
-            {% for invoice in invoices %}
-                {% set ns.bill_to = invoice.bill_to %}
-                {% set ns.invoice_number = invoice.invoice_number %}
-                {% set ns.submitted = false %}
-                <div class="container-sm border pull-left column">
-                    <h6>Billed To: {{invoice.bill_to}}</h6>
-                    <h6>Invoice Number: {{invoice.invoice_number}}</h6>
-                    <h6>Billing Street: {{invoice.billing_street}}</h6>
-                    <h6>Billing Country: {{invoice.billing_country}}</h6>
-                    <h6>Billing Code: {{invoice.billing_code}}</h6>
-                    <h6>Reference: {{invoice.reference}}</h6>
-                    <h6>Attention: {{invoice.attention}}</h6>
-                    <h6>Currency: {{invoice.currency}}</h6>
-                    <h6>Local Site: {{invoice.local_site}}</h6>
-                    
-                </div>
-                <div class="container-sm border pull-right column">
-                    <h6>Last Updated: {{invoice.updated}}</h6>                   
-                    <h6>Invoice Status: {{invoice.invoice_status}}</h6>
-                    <h6>Payment Status: {{invoice.payment_status}}</h6>
-                    <h6>Invoice Date: {{invoice.invoice_date}}</h6>
-                    <h6>Due Date: {{invoice.due_date}}</h6>
-                    <h6>Payment Term: {{invoice.payment_term}} Days</h6>
-                    <h6>Invoice Total Amount: ${{invoice.invoice_total_amount_with_tax}}</h6> 
-                    <h6>Primary Finance Email: {{invoice.primary_finance_email}}</h6> 
-                    <h6>Extra Email: {{invoice.finance_email}}</h6> 
-                </div>
-                {% if 'Confirm' == invoice.invoice_status %}
-                    {% set ns.found = true %}
-                {% endif %}
-                {% if 'Submitted' == invoice.invoice_status %}
-                    {% set ns.submitted = true %}
-                {% endif %}
-            {% endfor %}                 
-        {% endif %}
-        </form>
 
-        {% if id %}
+<h2>{{ title }}</h2>
+<!-- Button trigger modal -->
+<div class="container-fluid">
+    {% set ns = namespace(found=false, bill_to=0, invoice_number=0) %}
+    {% if invoices %}
+        {% for invoice in invoices %}
+            {% set ns.bill_to = invoice.bill_to %}
+            {% set ns.invoice_number = invoice.invoice_number %}
+            {% set ns.submitted = false %}
+    <div class="row">
+        <div class="col">
+            <dl>
+                <dt>Customer</dt>
+                <dd>{{invoice.bill_to}}</dd>
+                <dt>Street</dt>
+                <dd>{{invoice.billing_street}}</dd>
+                <dt>Country</dt>
+                <dd>{{invoice.billing_country}}</dd>
+                <dt>Postal Code</dt>
+                <dd>{{invoice.billing_code}}</dd>
+            </dl>
+        </div>
+        <div class="col">
+            <dl>
+                <dt>Reference</dt>
+                <dd>{{invoice.reference}}</dd>
+                <dt>Attention</dt>
+                <dd>{{invoice.attention}}</dd>
+                <dt>Primary Finance Email</dt>
+                <dd class="red">{{invoice.primary_finance_email}}</dd>
+                <dt>Extra Email</dt>
+                <dd class="red">{{invoice.finance_email}}</dd>
+            </dl>
+        </div>
+        <div class="col">
+            <dl>
+                <dt>Invoice Number</dt>
+                <dd>{{invoice.invoice_number}}</dd>
+                <dt>Last Updated</dt>
+                <dd class="red">{{invoice.updated}} UTC</dd>
+                <dt>Invoice Status</dt>
+                <dd class="red">{{invoice.invoice_status}}</dd>
+                <dt>Invoice Date</dt>
+                <dd>{{invoice.invoice_date}}</dd>
+
+
+            </dl>
+        </div>
+        <div class="col">
+            <dl>
+
+                <dt>Local Site</dt>
+                <dd>{{invoice.local_site}} </dd>
+                <dt>Payment Term</dt>
+                <dd>{{invoice.payment_term}}</dd>
+                <dt>PartitionKey</dt>
+                <dd>{{invoice.PartitionKey}}</dd>
+                <dt>Due Date</dt>
+                <dd>{{invoice.due_date}}</dd>
+
+            </dl>
+        </div>
+        <div class="col">
+            <dl>
+                <dt>Currency</dt>
+                <dd>{{invoice.currency}}</dd>
+                <dt>Invoice Total Amount</dt>
+                <dd>${{invoice.invoice_total_amount}}</dd>
+                <dt>Invoice Tax Amount</dt>
+                <dd>${{invoice.invoice_tax_amount}}</dd>
+                <dt>Invoice Total Amount With Tax</dt>
+                <dd class="red">${{invoice.invoice_total_amount_with_tax}}</dd>
+            </dl>
+        </div>
+    </div>
+            {% if 'Confirm' == invoice.invoice_status %}{% set ns.found = true %}{% endif %}
+            {% if 'Submitted' == invoice.invoice_status %}{% set ns.submitted = true %}{% endif %}
+        {% endfor %}
+    {% endif %}
+
+
+
+    {% if id %}
             {% if ns.submitted == false%}
-            <button id="confirmInvoice" type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmInvoiceModal">
+    <div class="row">
+        <div class="col">
+            <button id="confirmInvoice" type="button" class="btn btn-primary" data-toggle="modal"
+                data-target="#confirmInvoiceModal">
                 Confirm Invoice
             </button>
             {% endif %}
             {% if ns.found%}
-            <button id="sendInvoice" type="button" class="btn btn-success" data-toggle="modal" data-target="#sendEmailModal">
+            <button id="sendInvoice" type="button" class="btn btn-success" data-toggle="modal"
+                data-target="#sendEmailModal">
                 Send Email to Customer
-            </button>         
+            </button>
             {% endif %}
             {% if ns.found or ns.submitted%}
-            <a class="btn btn-primary" target="_blank" href="{{ url_for('preview_invoice',invoice_number=ns.invoice_number,PartitionKey=PartitionKey) }}">Preview Invoice</a>
+            <a class="btn btn-primary" target="_blank"
+                href="{{ url_for('preview_invoice',invoice_number=ns.invoice_number,PartitionKey=PartitionKey) }}">Preview
+                Invoice</a>
+            
+            <a class="btn btn-primary" target="_blank"
+                href="{{ url_for('preview_statement',bill_to=ns.bill_to,PartitionKey=PartitionKey) }}">Preview
+                Statement</a>
             {% endif %}
-            <a class="btn btn-primary" target="_blank" href="{{ url_for('preview_statement',bill_to=ns.bill_to,PartitionKey=PartitionKey) }}">Preview Statement</a>
-        {% endif %}
-        {% if sub_title %}<h3>{{ sub_title }}</h3>{% endif %}
-  
-        {% if table %}{{table}}{% endif %} 
-
-        
-
+        </div>
     </div>
-    <!-- Modal -->
-    <div class="modal fade" id="confirmInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+    {% endif %}
+
+    </form>
+
+
+    {% if table %}{{table}}{% endif %}
+
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="confirmInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title" id="confirmInvoiceModalTitle">Confirm Invoice</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+                <h5 class="modal-title" id="confirmInvoiceModalTitle">Confirm Invoice</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-            
+
             </div>
             <div class="modal-footer">
-            <button type="button"  class="btn btn-secondary" data-dismiss="modal">Close</button>
-            {% if id %}<a class="btn btn-primary" href="{{ url_for('post_invoice',id=id,PartitionKey=PartitionKey) }}">Confirm invoice</a>{% endif %}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                {% if id %}<a class="btn btn-primary"
+                    href="{{ url_for('post_invoice',id=id,PartitionKey=PartitionKey) }}">Confirm invoice</a>{% endif
+                %}
             </div>
         </div>
-        </div>
     </div>
+</div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="sendEmailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+<!-- Modal -->
+<div class="modal fade" id="sendEmailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title" id="sendEmailModalTitle">Submit Invoice</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+                <h5 class="modal-title" id="sendEmailModalTitle">Submit Invoice</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-            
+
             </div>
             <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            {% if id %}<a class="btn btn-primary" href="{{ url_for('send_email',id=id,PartitionKey=PartitionKey) }}">Send Email to Customer</a>{% endif %}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                {% if id %}<a class="btn btn-primary"
+                    href="{{ url_for('send_email',id=id,PartitionKey=PartitionKey) }}">Send Email to Customer</a>{%
+                endif %}
             </div>
         </div>
-        </div>
     </div>
+</div>
 {% endblock %}

@@ -5,28 +5,28 @@ import requests
 # Declare your table
 class InvoiceTable(Table):
     table_id = "invoicedata" 
-    classes = ['table table-striped'] 
-    LineItems = LinkCol('Line Items',endpoint="get_lineitems",url_kwargs=dict(PartitionKey='PartitionKey',id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm no-filter','target':'_blank'},)
-    PartitionKey = Col('Invoice Month',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'PartitionKey'})
-    invoice_number = Col('Invoice Number',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'invoice_number'})   
-    bill_to = Col('Bill To',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'bill_to'})
-    local_site = Col('Local Site',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'local_site'})
-    invoice_status = Col('Invoice Status',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'invoice_status'})
+    classes = ['table table-striped invoicedata'] 
+    LineItems = LinkCol('Line Items',text_fallback='Line Item',endpoint="get_lineitems",url_kwargs=dict(PartitionKey='PartitionKey',id='id'),anchor_attrs={'class': 'btn btn-outline-primary btn-sm no-filter','target':'_blank'},)
+    PartitionKey = Col('Invoice Month',th_html_attrs={'class': 'filter'},column_html_attrs={'name':'PartitionKey'})
+    invoice_number = Col('Invoice Number',th_html_attrs={'class': 'filter'},column_html_attrs={'name':'invoice_number'})   
+    bill_to = Col('Bill To',th_html_attrs={'class': 'filter'},column_html_attrs={'name':'bill_to'})
+    primary_finance_email = Col('primary_finance_email',column_html_attrs={'hidden': 'true','name':'primary_finance_email'})
+    finance_email = Col('finance_email',column_html_attrs={'hidden': 'true','name':'finance_email'})
+    local_site = Col('Local Site',th_html_attrs={'class': 'filter'},column_html_attrs={'name':'local_site'})
+    invoice_status = Col('Invoice Status',th_html_attrs={'class': 'filter'},column_html_attrs={'name':'invoice_status'})
+    currency = Col('Currency',column_html_attrs={'name':'currency'})
     invoice_total_amount= Col('invoice_total_amount',column_html_attrs={'hidden': 'true','name':'invoice_total_amount'})
     invoice_tax_amount= Col('invoice_tax_amount',column_html_attrs={'hidden': 'true','name':'invoice_tax_amount'})
-    invoice_total_amount_with_tax = Col('Invoice Total Amount With Tax',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'invoice_total_amount_with_tax'}) 
-    invoice_owner = Col('Invoice Owner',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'invoice_owner'}) 
-    bill_entity = Col('Bill Entity',th_html_attrs={'class': '.filter'},column_html_attrs={'name':'bill_entity'})    
-    invoice_date = Col('Invoice Date',th_html_attrs={'class': '.filter'},column_html_attrs={'hidden': 'true','name':'invoice_date'})   
-    currency = Col('Currency',column_html_attrs={'hidden': 'true','name':'currency'})   
+    invoice_total_amount_with_tax = Col('Invoice Total Amount With Tax',th_html_attrs={'class': 'filter'},column_html_attrs={'name':'invoice_total_amount_with_tax'}) 
+    bill_entity = Col('Bill Entity',th_html_attrs={'class': 'filter'},column_html_attrs={'name':'bill_entity'})
+    invoice_owner = Col('Invoice Owner',th_html_attrs={'class': 'filter'},column_html_attrs={'name':'invoice_owner'})     
+    invoice_date = Col('Invoice Date',th_html_attrs={'class': 'filter'},column_html_attrs={'hidden': 'true','name':'invoice_date'})      
+    due_date = Col('Due Date',column_html_attrs={'hidden': 'true','name':'due_date'})
     payment_status = Col('Payment Status',column_html_attrs={'hidden': 'true','name':'payment_status'})            
     paid_amount = Col('Paid Amount',column_html_attrs={'hidden': 'true','name':'paid_amount'})
     outstanding_amount = Col('Outstanding Amount',column_html_attrs={'hidden': 'true','name':'outstanding_amount'})
-    due_date = Col('Due Date',column_html_attrs={'hidden': 'true','name':'due_date'})
-    primary_finance_email = Col('primary_finance_email',column_html_attrs={'hidden': 'true','name':'primary_finance_email'})
-    finance_email = Col('finance_email',column_html_attrs={'hidden': 'true','name':'finance_email'})
     collection  = Col('collection',column_html_attrs={'hidden': 'true','name':'collection'})
-    Child = Col('More Information',column_html_attrs={'class': 'dt-control .filter'}) 
+    Child = Col('More Info',column_html_attrs={'class': 'dt-control'}) 
 
 
 class InvoiceItem(object):
@@ -36,7 +36,7 @@ class InvoiceItem(object):
         self.id = data.get("id")
         self.Child = ""
         self.checkbox = ""
-        self.LineItems = data
+        self.LineItems = data.get("invoice_number")
         self.collection = data.get("collection")
         self.bill_to = data.get("bill_to")
         self.attention = data.get("attention")

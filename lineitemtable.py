@@ -5,7 +5,7 @@ import requests
 # Declare your table
 class LineItemTable(Table):
     table_id = "lineitemdata"
-    classes = ['table table-striped']
+    classes = ['table table-striped display compact']
     description = Col('Description',column_html_attrs={'name':'description'})
     order_id = Col('Order ID',column_html_attrs={'name':'order_id'})
     service_id = Col('Service ID',column_html_attrs={'name':'service_id'})
@@ -24,6 +24,7 @@ class LineItemTable(Table):
     start_invoice_date = Col('start_invoice_date',column_html_attrs={'hidden': 'true','name':'start_invoice_date'})
     start_bill_date = Col('start_bill_date',column_html_attrs={'hidden': 'true','name':'start_bill_date'})
     end_bill_date = Col('end_bill_date',column_html_attrs={'hidden': 'true','name':'end_bill_date'})
+    termination_date = Col('termination_date',column_html_attrs={'hidden': 'true','name':'termination_date'})
     Child = Col('More Information',column_html_attrs={'class': 'dt-control .filter'})
 
 # Get some objects
@@ -46,6 +47,7 @@ class LineItemObject(object):
         self.start_invoice_date = data.get("start_invoice_date") 
         self.start_bill_date = data.get("start_bill_date") 
         self.end_bill_date = data.get("end_bill_date") 
+        self.termination_date = data.get("termination_date")
         self.is_termination = data.get("is_termination")
         self.circuit_id = data.get("circuit_id")
         self.our_services_internal_id = data.get("our_services_internal_id")

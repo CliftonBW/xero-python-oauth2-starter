@@ -12,23 +12,10 @@ p.info {
     font-size:15px;
     margin:2px;
 }
-.container{
-    max-width: 800px;
-}
-.row {
-    margin-left:-5px;
-    margin-right:-5px;
-  }
-    
-.column {
-    float: left;
-    width: 50%;
-    padding: 5px;
-}
 
-.block {
-    display: block;
-}
+
+
+
 
 .bill_info {
     border-collapse: collapse;
@@ -80,59 +67,19 @@ p.info {
     width: 100%;
 }
 
-table{
+.invoicedata{
     margin-top: 10px; 
-    width: 80%;  
+    width: 100%;  
 }
 
 th, td {
-    padding: 2px;
-    font-size: 13px;
-}
-.service-table{
-    table-layout: auto;
-    border: 1px solid black;
-    border-collapse: collapse;
+    padding: 5px;
+    font-size: 12px;
 }
 
-.lineitem-table{
-    border: 1px solid black;
-    border-collapse: collapse;   
+
+
+.red {
+    color: red;
 }
 
-.subtotal-table{
-    border: 1px solid black;
-    border-collapse: collapse;
-    float: right;
-}
-
-th.service-header {
-    text-align: left;
-    background-color: rgb(32, 103, 209);
-    color: white;
-}
-
-th.lineitem-header {
-    text-align: left;
-    background-color: rgb(32, 103, 209);
-    color: white;
-}
-
-.hasTooltip span {
-    display: none;
-    color: #000;
-    text-decoration: none;
-    padding: 3px;
-}
-
-.hasTooltip:hover span {
-    display: block;
-    position: absolute;
-    background-color: #FFF;
-    border: 1px solid #CCC;
-    margin: 2px 10px;
-}
-
-.hidden {
-    display: none; 
-}
