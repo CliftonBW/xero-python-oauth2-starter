@@ -2,38 +2,7 @@ img.logo{
     width:213px;
     height:42px;
 }
-p.address {
-    font-size:10px;
-    margin:2px;
-}
 
-
-p.info {
-    font-size:15px;
-    margin:2px;
-}
-
-
-
-
-
-.bill_info {
-    border-collapse: collapse;
-    border-spacing: 0;
-    width: 100%;
-  }
-
-.exchange_info {
-    border-collapse: collapse;
-    border-spacing: 0;
-    border: 1px solid black;
-}
-
-.tax_invoice{
-    width:  210mm;
-    height: 297mm;
-    font-family: Arial, Helvetica, sans-serif;
-}
 
 .topcorner{
     /* position: relative;
@@ -44,40 +13,21 @@ p.info {
     color: rgb(32, 103, 209);
 }
 
-.addresstopcorner{
-    /* position: relative;
-    margin: 20px;
-    display: block; */
-    position: fixed;
-    top: 120px;
-    right: 10px;
-}
-
-.infobottom{
-    position: relative;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-}
-
-.subtotal{
-    position: relative;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-}
-
-.invoicedata{
-    margin-top: 10px; 
-    width: 100%;  
-}
 
 th, td {
-    padding: 5px;
+    font-family: 'Montserrat', Helvetica, sans-serif;
     font-size: 12px;
 }
 
 
+dd, dt {
+    font-family: 'Montserrat', Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.table {
+    width: 90%;
+}
 
 .red {
     color: red;

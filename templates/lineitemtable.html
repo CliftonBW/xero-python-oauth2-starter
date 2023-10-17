@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<h2>{{ title }}</h2>
 <!-- Button trigger modal -->
+
+{% set ns = namespace(found=false, bill_to=0, invoice_number=0) %}
+{% if invoices %}
+{% for invoice in invoices %}
+{% set ns.bill_to = invoice.bill_to %}
+{% set ns.invoice_number = invoice.invoice_number %}
+{% set ns.submitted = false %}
+
 <div class="container-fluid">
-    {% set ns = namespace(found=false, bill_to=0, invoice_number=0) %}
-    {% if invoices %}
-        {% for invoice in invoices %}
-            {% set ns.bill_to = invoice.bill_to %}
-            {% set ns.invoice_number = invoice.invoice_number %}
-            {% set ns.submitted = false %}
     <div class="row">
         <div class="col">
             <dl>
@@ -77,17 +77,20 @@
             </dl>
         </div>
     </div>
-            {% if 'Confirm' == invoice.invoice_status %}{% set ns.found = true %}{% endif %}
-            {% if 'Submitted' == invoice.invoice_status %}{% set ns.submitted = true %}{% endif %}
-        {% endfor %}
-    {% endif %}
+</div>
+{% if 'Confirm' == invoice.invoice_status %}{% set ns.found = true %}{% endif %}
+{% if 'Submitted' == invoice.invoice_status %}{% set ns.submitted = true %}{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if id %}
 
 
-
-    {% if id %}
-            {% if ns.submitted == false%}
+<div class="container-fluid">
     <div class="row">
-        <div class="col">
+        <dt>Actions:</dt>
+        <div class="col py-1">
+            {% if ns.submitted == false%}
             <button id="confirmInvoice" type="button" class="btn btn-primary" data-toggle="modal"
                 data-target="#confirmInvoiceModal">
                 Confirm Invoice
@@ -99,25 +102,37 @@
                 Send Email to Customer
             </button>
             {% endif %}
-            {% if ns.found or ns.submitted%}
-            <a class="btn btn-primary" target="_blank"
-                href="{{ url_for('preview_invoice',invoice_number=ns.invoice_number,PartitionKey=PartitionKey) }}">Preview
-                Invoice</a>
-            
-            <a class="btn btn-primary" target="_blank"
-                href="{{ url_for('preview_statement',bill_to=ns.bill_to,PartitionKey=PartitionKey) }}">Preview
-                Statement</a>
-            {% endif %}
         </div>
     </div>
-    {% endif %}
 
-    </form>
+    <div class="row">
+        <dt>Preview:</dt>
+        <div class="col py-1">
+            {% if ns.found or ns.submitted%}
+            <a class="btn btn-info" target="_blank"
+                href="{{ url_for('preview_invoice',invoice_number=ns.invoice_number,PartitionKey=PartitionKey) }}">Preview
+                Invoice</a>
+            {% endif %}
+            <a class="btn btn-info" target="_blank"
+                href="{{ url_for('preview_statement',bill_to=ns.bill_to,PartitionKey=PartitionKey) }}">Preview
+                Statement</a>
+            
+        </div>
+    </div>
+</div>
+
+{% endif %}
 
 
+
+</form>
+
+<div class="container-fluid">
     {% if table %}{{table}}{% endif %}
 
 </div>
+
+
 
 
 <!-- Modal -->

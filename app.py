@@ -141,6 +141,7 @@ def get_lineitems(PartitionKey,id):
         id=id,
         PartitionKey=PartitionKey,
         table=table,
+        title="Line Item",
         invoices=data2
     )
 

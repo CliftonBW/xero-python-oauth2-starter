@@ -5,7 +5,7 @@ import requests
 # Declare your table
 class LineItemTable(Table):
     table_id = "lineitemdata"
-    classes = ['table table-striped display compact']
+    classes = ['table table-striped lineitemdata']
     description = Col('Description',column_html_attrs={'name':'description'})
     order_id = Col('Order ID',column_html_attrs={'name':'order_id'})
     service_id = Col('Service ID',column_html_attrs={'name':'service_id'})
@@ -16,7 +16,7 @@ class LineItemTable(Table):
     quantity = Col('Quantity',column_html_attrs={'name':'quantity'})
     unit_amount = Col('Unit Amount',column_html_attrs={'name':'unit_amount'}) 
     tax_type = Col('Tax Type',column_html_attrs={'name':'tax_type'})
-    lineitem_total_amount_with_tax = Col('Lineitem Total Amount With Tax',column_html_attrs={'name':'lineitem_total_amount_with_tax'})
+    lineitem_total_amount_with_tax = Col('Amount With Tax',column_html_attrs={'name':'lineitem_total_amount_with_tax'})
     lineitem_tax_amount = Col('lineitem_tax_amount',column_html_attrs={'hidden': 'true','name':'lineitem_tax_amount'})
     lineitem_total_amount = Col('lineitem_total_amount',column_html_attrs={'hidden': 'true','name':'lineitem_total_amount'})
     lineitem_discount_amount  = Col('lineitem_discount_amount',column_html_attrs={'hidden': 'true','name':'lineitem_discount_amount'})
