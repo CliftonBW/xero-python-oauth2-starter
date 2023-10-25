@@ -22,8 +22,8 @@ else:
 
 
 
-def getBillTownInvoices():
-    req = requests.get(url + 'GetInvoices',params={"code":invoices_code})
+def getBillTownInvoices(showVoid=None):
+    req = requests.get(url + 'GetInvoices',params={"code":invoices_code,"showVoid":showVoid})
     data = req.json()['data']
     return data
 

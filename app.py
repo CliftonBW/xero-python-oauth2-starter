@@ -53,13 +53,23 @@ def login():
         ))
 
 
+def token_required(function):
+    @wraps(function)
+    def decorator(*args, **kwargs):
+        token = auth.get_token_for_user(config.SCOPE)
+        logging.info(token)
+        if "error" in token:
+            return redirect(url_for("login"))
 
-def token_required():
-    token = auth.get_token_for_user(config.SCOPE)
-    if "error" in token:
-        return True,redirect(url_for("login"))
-    else:
-        return False,""
+        return function(*args, **kwargs)
+
+    return decorator
+# def token_required():
+#     token = auth.get_token_for_user(config.SCOPE)
+#     if "error" in token:
+#         return True,redirect(url_for("login"))
+#     else:
+#         return False,""
 
 
 @app.route(config.REDIRECT_PATH)
@@ -69,10 +79,8 @@ def auth_response():
 
 
 @app.route("/logout")
+@token_required
 def logout():
-    valid,path = token_required()
-    if valid:
-        return path
     return redirect(auth.log_out(url_for("index", _external=True)))
 
 @app.route("/call_downstream_api")
@@ -86,12 +94,26 @@ def call_downstream_api():
         ).json()
     return render_template('display.html', result=api_result)
 
+
 @app.route("/")
+@token_required
 def index():   
-    valid,path = token_required()
-    if valid:
-        return path
     data = getBillTownInvoices()
+    items = []
+    for d in data:
+        items.append(InvoiceItem(data=d))
+
+    table = InvoiceTable(items)
+    return render_template(
+        "table.html",
+        title="Invoices",
+        table=table
+    )
+
+@app.route("/show-void-invoices")
+@token_required
+def showVoidInvoices():   
+    data = getBillTownInvoices("True")
     items = []
     for d in data:
         items.append(InvoiceItem(data=d))
@@ -105,28 +127,22 @@ def index():
 
 
 @app.route("/post-invoice/<string:PartitionKey>/<string:id>")
+@token_required
 def post_invoice(PartitionKey,id):
-    valid,path = token_required()
-    if valid:
-        return path
     req4 = postBillTownInvoice(PartitionKey,id)
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
 
 @app.route("/send-email/<string:PartitionKey>/<string:id>")
+@token_required
 def send_email(PartitionKey,id):
-    valid,path = token_required()
-    if valid:
-        return path
     req = sendEmailBillTownInvoice(PartitionKey,id) 
     return redirect(url_for("get_lineitems", id=id,PartitionKey=PartitionKey))
 
 
 @app.route("/get-lineitems/<string:PartitionKey>/<string:id>")
+@token_required
 def get_lineitems(PartitionKey,id):
-    valid,path = token_required()
-    if valid:
-        return path
     lineitemdate = PartitionKey.replace('Invoice','Lineitem')
     data = getBillTownInvoiceLineItems(id,lineitemdate)
     data2 = getBillTownInvoice(id,PartitionKey)
@@ -147,10 +163,8 @@ def get_lineitems(PartitionKey,id):
 
 
 @app.route("/get-statements/<string:account_name>/<string:PartitionKey>/<string:id>")
+@token_required
 def get_statements(account_name,PartitionKey,id):
-    valid,path = token_required()
-    if valid:
-        return path
     data = getBillTownStatementByCompany(account_name)
     data2 = getBillTownInvoice(id,PartitionKey)
     items = []
@@ -168,10 +182,8 @@ def get_statements(account_name,PartitionKey,id):
 
 
 @app.route("/preview_invoice/<string:PartitionKey>/<string:invoice_number>")
+@token_required
 def preview_invoice(PartitionKey: str, invoice_number: str):
-    valid,path = token_required()
-    if valid:
-        return path
     month = PartitionKey.replace("_Invoice", "")
     res = previewBillTownInvoice(month,invoice_number)
 
@@ -182,10 +194,8 @@ def preview_invoice(PartitionKey: str, invoice_number: str):
 
 
 @app.route("/preview_statement/<string:PartitionKey>/<string:bill_to>")
+@token_required
 def preview_statement(PartitionKey: str, bill_to: str):
-    valid,path = token_required()
-    if valid:
-        return path
     month = PartitionKey.replace("_Invoice", "")
     res = previewBillTownStatement(month,bill_to)
 
