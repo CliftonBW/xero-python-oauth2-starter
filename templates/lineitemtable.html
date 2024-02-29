@@ -79,7 +79,7 @@
     </div>
 </div>
 {% if 'Confirm' == invoice.invoice_status %}{% set ns.found = true %}{% endif %}
-{% if 'Submitted' == invoice.invoice_status %}{% set ns.submitted = true %}{% endif %}
+{% if 'Submitted' == invoice.invoice_status or 'Submitted(Auto)' == invoice.invoice_status or 'Submitted(Manual)' == invoice.invoice_status%}{% set ns.submitted = true %}{% endif %}
 {% endfor %}
 {% endif %}
 
